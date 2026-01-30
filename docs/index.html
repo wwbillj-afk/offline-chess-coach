@@ -6,84 +6,59 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-  body {
-    margin: 0;
-    background: #0f172a;
-    color: #e5e7eb;
-    font-family: system-ui, sans-serif;
-    display: flex;
-    flex-direction: column;
-  }
+body {
+  margin: 0;
+  background: #0f172a;
+  color: #e5e7eb;
+  font-family: system-ui, sans-serif;
+}
 
-  /* BOARD LAYOUT (MOBILE SAFE) */
-  #board-wrapper {
-    width: 100%;
-    max-width: 360px;
-    margin: 16px auto;
-    padding-top: 100%;
-    position: relative;
-  }
+#board-wrapper {
+  max-width: 360px;
+  margin: 16px auto;
+  padding-top: 100%;
+  position: relative;
+}
 
-  #board {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    border: 3px solid #334155;
-    border-radius: 8px;
-    overflow: hidden;
-  }
+#board {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  border: 3px solid #334155;
+}
 
-  .square {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.2rem;
-    user-select: none;
-  }
+.square {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+}
 
-  /* CLASSIC BOARD COLORS (CHESS.COM STYLE) */
-  .light { background: #f0d9b5; }
-  .dark  { background: #b58863; }
+.light { background: #f0d9b5; }
+.dark  { background: #b58863; }
 
-  /* PIECE STYLING */
-  .white {
-    color: #ffffff;
-    text-shadow:
-      0 0 2px #000,
-      0 0 6px rgba(255,255,255,0.6);
-  }
+.white { color: #fff; text-shadow: 0 0 3px #000; }
+.black { color: #111; text-shadow: 0 0 3px #fff; }
 
-  .black {
-    color: #111111;
-    text-shadow:
-      0 0 2px #fff,
-      0 0 4px rgba(0,0,0,0.8);
-  }
+#coach {
+  padding: 12px;
+  background: #020617;
+  min-height: 60px;
+}
 
-  #coach {
-    padding: 12px;
-    background: #020617;
-    border-top: 1px solid #1e293b;
-    min-height: 60px;
-  }
+#controls {
+  padding: 12px;
+}
 
-  #controls {
-    display: flex;
-    gap: 8px;
-    padding: 12px;
-    background: #020617;
-  }
-
-  button {
-    flex: 1;
-    padding: 12px;
-    background: #1e293b;
-    color: #e5e7eb;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.9rem;
-  }
+button {
+  width: 100%;
+  padding: 12px;
+  background: #1e293b;
+  color: #e5e7eb;
+  border: none;
+  border-radius: 8px;
+}
 </style>
 </head>
 
@@ -93,68 +68,143 @@
   <div id="board"></div>
 </div>
 
-<div id="coach">
-  <strong>Coach:</strong> Welcome. Make your first move.
-</div>
+<div id="coach"><strong>Coach:</strong> Play mode.</div>
 
 <div id="controls">
-  <button disabled>🎙 Push to Talk</button>
-  <button disabled>❓ Why?</button>
+  <button onclick="startTactics()">⚔️ Start Tactics (10 puzzles)</button>
 </div>
 
+<script src="https://unpkg.com/chess.js@1.0.0/chess.min.js"></script>
+
 <script>
-  const boardEl = document.getElementById("board");
-  const coachEl = document.getElementById("coach");
+const boardEl = document.getElementById("board");
+const coachEl = document.getElementById("coach");
 
-  const pieces = {
-    a1:"♖", b1:"♘", c1:"♗", d1:"♕", e1:"♔", f1:"♗", g1:"♘", h1:"♖",
-    a2:"♙", b2:"♙", c2:"♙", d2:"♙", e2:"♙", f2:"♙", g2:"♙", h2:"♙",
-    a7:"♟", b7:"♟", c7:"♟", d7:"♟", e7:"♟", f7:"♟", g7:"♟", h7:"♟",
-    a8:"♜", b8:"♞", c8:"♝", d8:"♛", e8:"♚", f8:"♝", g8:"♞", h8:"♜"
-  };
+let game = new Chess();
+let selected = null;
+let mode = "play";
+let puzzleIndex = 0;
 
-  let selected = null;
+/* ===== TACTICS DATABASE ===== */
 
-  function drawBoard() {
-    boardEl.innerHTML = "";
-    for (let r = 8; r >= 1; r--) {
-      for (let c = 0; c < 8; c++) {
-        const square = "abcdefgh"[c] + r;
-        const div = document.createElement("div");
+const puzzles = [
+{
+  fen: "4k3/3q4/8/8/8/8/4K2R/8 w - - 0 1",
+  solution: ["h2h8"],
+  difficulty: "easy",
+  theme: "mate",
+  explanation: {
+    idea: "Back-rank mate.",
+    principle: "The king has no escape squares."
+  }
+},
+{
+  fen: "6k1/3q4/8/8/8/5N2/8/6K1 w - - 0 1",
+  solution: ["f3e5"],
+  difficulty: "medium",
+  theme: "fork",
+  explanation: {
+    idea: "Knight fork.",
+    principle: "One piece attacks two valuable targets."
+  }
+}
+];
 
-        const isDark = (r + c) % 2 === 1;
-        div.className = "square " + (isDark ? "dark" : "light");
+/* ===== DRAW BOARD ===== */
 
-        if (pieces[square]) {
-          const span = document.createElement("span");
-          span.textContent = pieces[square];
-          span.className =
-            r <= 2 ? "white" :
-            r >= 7 ? "black" :
-            (pieces[square] <= "♙" ? "white" : "black");
+function drawBoard() {
+  boardEl.innerHTML = "";
+  const board = game.board();
 
-          div.appendChild(span);
-        }
+  for (let r = 7; r >= 0; r--) {
+    for (let c = 0; c < 8; c++) {
+      const sq = "abcdefgh"[c] + (r+1);
+      const div = document.createElement("div");
+      div.className = "square " + ((r + c) % 2 ? "dark" : "light");
 
-        div.onclick = () => tap(square);
-        boardEl.appendChild(div);
+      const piece = game.get(sq);
+      if (piece) {
+        const span = document.createElement("span");
+        span.textContent = pieceUnicode(piece);
+        span.className = piece.color === "w" ? "white" : "black";
+        div.appendChild(span);
       }
+
+      div.onclick = () => tapSquare(sq);
+      boardEl.appendChild(div);
     }
+  }
+}
+
+function pieceUnicode(p) {
+  const map = {
+    wp:"♙", wr:"♖", wn:"♘", wb:"♗", wq:"♕", wk:"♔",
+    bp:"♟", br:"♜", bn:"♞", bb:"♝", bq:"♛", bk:"♚"
+  };
+  return map[p.color + p.type];
+}
+
+/* ===== INPUT HANDLING ===== */
+
+function tapSquare(square) {
+  if (!selected) {
+    selected = square;
+    return;
   }
 
-  function tap(square) {
-    if (selected && pieces[selected]) {
-      pieces[square] = pieces[selected];
-      delete pieces[selected];
-      selected = null;
-      coachEl.innerHTML = "<strong>Coach:</strong> Move played.";
-      drawBoard();
-    } else if (pieces[square]) {
-      selected = square;
-    }
-  }
+  const move = game.move({
+    from: selected,
+    to: square,
+    promotion: "q"
+  });
+
+  selected = null;
+
+  if (!move) return;
 
   drawBoard();
+  handleMove(move.san);
+}
+
+function handleMove() {
+  if (mode !== "tactics") return;
+
+  const puzzle = puzzles[puzzleIndex];
+  const playedMoves = game.history({ verbose: false });
+
+  if (playedMoves.join(" ") === puzzle.solution.join(" ")) {
+    coachEl.innerHTML =
+      `<strong>Coach:</strong> Correct. ${puzzle.explanation.idea} ${puzzle.explanation.principle}`;
+    setTimeout(nextPuzzle, 1500);
+  }
+}
+
+/* ===== TACTICS FLOW ===== */
+
+function startTactics() {
+  mode = "tactics";
+  puzzleIndex = 0;
+  loadPuzzle();
+}
+
+function loadPuzzle() {
+  game = new Chess(puzzles[puzzleIndex].fen);
+  coachEl.innerHTML =
+    `<strong>Coach:</strong> Puzzle ${puzzleIndex+1} of 10. Your move.`;
+  drawBoard();
+}
+
+function nextPuzzle() {
+  puzzleIndex++;
+  if (puzzleIndex >= puzzles.length) {
+    coachEl.innerHTML =
+      "<strong>Coach:</strong> Training complete. Well done.";
+    return;
+  }
+  loadPuzzle();
+}
+
+drawBoard();
 </script>
 
 </body>

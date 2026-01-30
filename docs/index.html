@@ -13,35 +13,59 @@
     font-family: system-ui, sans-serif;
     display: flex;
     flex-direction: column;
-    height: 100vh;
+  }
+
+  /* BOARD LAYOUT (MOBILE SAFE) */
+  #board-wrapper {
+    width: 100%;
+    max-width: 360px;
+    margin: 16px auto;
+    padding-top: 100%;
+    position: relative;
   }
 
   #board {
-    width: 90vw;
-    max-width: 360px;
-    aspect-ratio: 1 / 1;
-    margin: 16px auto;
+    position: absolute;
+    inset: 0;
     display: grid;
     grid-template-columns: repeat(8, 1fr);
-    border: 2px solid #334155;
+    border: 3px solid #334155;
+    border-radius: 8px;
+    overflow: hidden;
   }
 
   .square {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
+    font-size: 2.2rem;
     user-select: none;
   }
 
-  .light { background: #cbd5e1; }
-  .dark  { background: #475569; }
+  /* CLASSIC BOARD COLORS (CHESS.COM STYLE) */
+  .light { background: #f0d9b5; }
+  .dark  { background: #b58863; }
+
+  /* PIECE STYLING */
+  .white {
+    color: #ffffff;
+    text-shadow:
+      0 0 2px #000,
+      0 0 6px rgba(255,255,255,0.6);
+  }
+
+  .black {
+    color: #111111;
+    text-shadow:
+      0 0 2px #fff,
+      0 0 4px rgba(0,0,0,0.8);
+  }
 
   #coach {
-    flex: 1;
     padding: 12px;
     background: #020617;
     border-top: 1px solid #1e293b;
+    min-height: 60px;
   }
 
   #controls {
@@ -49,7 +73,6 @@
     gap: 8px;
     padding: 12px;
     background: #020617;
-    border-top: 1px solid #1e293b;
   }
 
   button {
@@ -59,16 +82,19 @@
     color: #e5e7eb;
     border: none;
     border-radius: 8px;
+    font-size: 0.9rem;
   }
 </style>
 </head>
 
 <body>
 
-<div id="board"></div>
+<div id="board-wrapper">
+  <div id="board"></div>
+</div>
 
 <div id="coach">
-  <strong>Coach:</strong> Tap a piece to move it.
+  <strong>Coach:</strong> Welcome. Make your first move.
 </div>
 
 <div id="controls">
@@ -78,6 +104,7 @@
 
 <script>
   const boardEl = document.getElementById("board");
+  const coachEl = document.getElementById("coach");
 
   const pieces = {
     a1:"♖", b1:"♘", c1:"♗", d1:"♕", e1:"♔", f1:"♗", g1:"♘", h1:"♖",
@@ -94,8 +121,21 @@
       for (let c = 0; c < 8; c++) {
         const square = "abcdefgh"[c] + r;
         const div = document.createElement("div");
-        div.className = "square " + ((r + c) % 2 ? "dark" : "light");
-        div.textContent = pieces[square] || "";
+
+        const isDark = (r + c) % 2 === 1;
+        div.className = "square " + (isDark ? "dark" : "light");
+
+        if (pieces[square]) {
+          const span = document.createElement("span");
+          span.textContent = pieces[square];
+          span.className =
+            r <= 2 ? "white" :
+            r >= 7 ? "black" :
+            (pieces[square] <= "♙" ? "white" : "black");
+
+          div.appendChild(span);
+        }
+
         div.onclick = () => tap(square);
         boardEl.appendChild(div);
       }
@@ -107,9 +147,8 @@
       pieces[square] = pieces[selected];
       delete pieces[selected];
       selected = null;
+      coachEl.innerHTML = "<strong>Coach:</strong> Move played.";
       drawBoard();
-      document.getElementById("coach").innerHTML =
-        "<strong>Coach:</strong> Move played.";
     } else if (pieces[square]) {
       selected = square;
     }
@@ -119,4 +158,4 @@
 </script>
 
 </body>
-</html>
+  </html>

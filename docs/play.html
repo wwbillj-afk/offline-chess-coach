@@ -1,278 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Play – Offline Chess Coach</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<title>Play | Offline Chess Coach</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<!-- Chessboard CSS -->
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"
+/>
 
 <style>
 body {
   margin: 0;
-  background: #0f172a;
+  background: #0b1220;
   color: #e5e7eb;
-  font-family: system-ui, sans-serif;
-  padding-bottom: 70px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.hidden { display: none; }
-
-h2 {
-  margin: 16px;
-  font-size: 1.2rem;
-}
-
-.section {
-  padding: 16px;
-  border-bottom: 1px solid #1e293b;
-}
-
-label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 0.9rem;
-  color: #cbd5f5;
-}
-
-input[type="range"] {
+/* Board container MUST have height on mobile */
+#board-wrapper {
   width: 100%;
-}
-
-select, button, input[type="text"] {
-  width: 100%;
-  padding: 12px;
-  margin-top: 8px;
-  background: #1e293b;
-  color: #e5e7eb;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-}
-
-button.primary {
-  background: #7cb342;
-  color: #000;
-  font-weight: bold;
+  max-width: 420px;
+  margin: 16px auto;
 }
 
 #board {
-  width: 90vw;
-  max-width: 360px;
-  aspect-ratio: 1 / 1;
-  margin: 16px auto;
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  border: 3px solid #334155;
+  width: 100%;
 }
 
-.square {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.2rem;
-  user-select: none;
-}
-
-.light { background: #f0d9b5; }
-.dark  { background: #b58863; }
-
-.white { color: #fff; text-shadow: 0 0 3px #000; }
-.black { color: #111; text-shadow: 0 0 3px #fff; }
-
-#coach-toggle {
+/* Coach panel */
+#coach {
   position: fixed;
-  bottom: 70px;
-  right: 16px;
-  background: #1e293b;
+  bottom: 72px;
+  right: 12px;
+  background: #111827;
   padding: 10px 14px;
-  border-radius: 20px;
+  border-radius: 14px;
   font-size: 0.85rem;
+  opacity: 0.9;
 }
 
-#coach-panel {
-  position: fixed;
-  bottom: 70px;
-  left: 0;
-  right: 0;
-  background: #020617;
-  padding: 16px;
-  max-height: 40%;
-  overflow-y: auto;
-  border-top: 1px solid #1e293b;
-}
-
-.nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 64px;
-  background: #020617;
-  display: flex;
-  border-top: 1px solid #1e293b;
-}
-
-.nav a {
-  flex: 1;
-  text-align: center;
-  padding-top: 6px;
-  font-size: 0.75rem;
-  color: #cbd5f5;
-  text-decoration: none;
-}
-
-.nav span {
-  display: block;
-  font-size: 1.4rem;
+/* Bottom nav spacing */
+.spacer {
+  height: 90px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- SETUP SCREEN -->
-<div id="setup">
-
-  <h2>New Game</h2>
-
-  <div class="section">
-    <label>Your name (coach will use it)</label>
-    <input type="text" id="playerName" placeholder="Enter your name">
-  </div>
-
-  <div class="section">
-    <label>Coach Strength</label>
-    <input type="range" min="400" max="2400" value="800" id="strength">
-    <div id="strengthLabel">Beginner (800)</div>
-  </div>
-
-  <div class="section">
-    <label>Coach Assistance</label>
-    <select id="assistance">
-      <option value="on">Guidance ON</option>
-      <option value="off">Silent (analysis only)</option>
-    </select>
-  </div>
-
-  <div class="section">
-    <label>Timer</label>
-    <select id="timer">
-      <option value="none">No Timer</option>
-      <option value="180">3 Minutes</option>
-      <option value="300">5 Minutes</option>
-      <option value="600">10 Minutes</option>
-      <option value="900">15 Minutes</option>
-    </select>
-  </div>
-
-  <div class="section">
-    <button class="primary" onclick="startGame()">Start Game</button>
-  </div>
-</div>
-
-<!-- GAME SCREEN -->
-<div id="game" class="hidden">
+<div id="board-wrapper">
   <div id="board"></div>
-
-  <div id="coach-toggle" onclick="toggleCoach()">↑ Coach</div>
-
-  <div id="coach-panel" class="hidden">
-    <strong>Coach:</strong>
-    <div id="coach-text"></div>
-  </div>
 </div>
 
-<!-- NAV -->
-<div class="nav">
-  <a href="index.html"><span>🏠</span>Home</a>
-  <a href="play.html"><span>▶️</span>Play</a>
-  <a href="puzzles.html"><span>🧩</span>Puzzles</a>
-  <a href="training.html"><span>🎓</span>Learn</a>
-  <a href="#"><span>📈</span>Progress</a>
-</div>
+<div id="coach">Coach: Your move.</div>
 
+<div class="spacer"></div>
+
+<!-- Libraries -->
 <script src="https://unpkg.com/chess.js@1.0.0/chess.min.js"></script>
+<script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
 
 <script>
-const strength = document.getElementById("strength");
-const strengthLabel = document.getElementById("strengthLabel");
-const coachText = document.getElementById("coach-text");
+const game = new Chess();
 
-strength.oninput = () => {
-  const v = strength.value;
-  let label = "Beginner";
-  if (v >= 800) label = "Strong Beginner";
-  if (v >= 1000) label = "Intermediate";
-  if (v >= 1300) label = "Advanced";
-  if (v >= 1600) label = "Expert";
-  if (v >= 1900) label = "Master";
-  strengthLabel.textContent = `${label} (${v})`;
-};
+const board = Chessboard("board", {
+  draggable: true,
+  position: "start",
+  pieceTheme:
+    "https://lichess1.org/assets/piece/staunton/{piece}.svg",
+  onDrop: function (source, target) {
+    const move = game.move({
+      from: source,
+      to: target,
+      promotion: "q"
+    });
 
-let game, playerName;
+    if (move === null) return "snapback";
 
-function startGame() {
-  playerName = document.getElementById("playerName").value || "Player";
-  localStorage.setItem("playerName", playerName);
-
-  document.getElementById("setup").classList.add("hidden");
-  document.getElementById("game").classList.remove("hidden");
-
-  game = new Chess();
-  drawBoard();
-
-  coachText.innerHTML =
-    `Alright <strong>${playerName}</strong>. Let’s play thoughtfully. I’ll be here if you need me.`;
-}
-
-function drawBoard() {
-  const boardEl = document.getElementById("board");
-  boardEl.innerHTML = "";
-  const board = game.board();
-
-  for (let r = 7; r >= 0; r--) {
-    for (let c = 0; c < 8; c++) {
-      const sq = "abcdefgh"[c] + (r + 1);
-      const div = document.createElement("div");
-      div.className = "square " + ((r + c) % 2 ? "dark" : "light");
-
-      const piece = game.get(sq);
-      if (piece) {
-        div.textContent = pieceSymbol(piece);
-        div.classList.add(piece.color === "w" ? "white" : "black");
-      }
-
-      div.onclick = () => tapSquare(sq);
-      boardEl.appendChild(div);
-    }
+    document.getElementById("coach").innerText =
+      "Coach: Played " + move.san;
   }
-}
-
-let selected = null;
-
-function tapSquare(sq) {
-  if (!selected) {
-    selected = sq;
-    return;
-  }
-
-  const move = game.move({ from: selected, to: sq, promotion: "q" });
-  selected = null;
-
-  if (!move) return;
-  drawBoard();
-}
-
-function pieceSymbol(p) {
-  const map = {
-    wp:"♙", wr:"♖", wn:"♘", wb:"♗", wq:"♕", wk:"♔",
-    bp:"♟", br:"♜", bn:"♞", bb:"♝", bq:"♛", bk:"♚"
-  };
-  return map[p.color + p.type];
-}
-
-function toggleCoach() {
-  document.getElementById("coach-panel").classList.toggle("hidden");
-}
+});
 </script>
 
 </body>

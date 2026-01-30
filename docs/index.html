@@ -73,7 +73,8 @@
     <button disabled>❓ Why?</button>
   </div>
 
-  <!-- Libraries -->
+  <!-- REQUIRED LIBRARIES (ORDER MATTERS) -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://unpkg.com/chess.js@1.0.0/chess.min.js"></script>
   <script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
 
@@ -83,7 +84,7 @@
     const board = Chessboard("board", {
       draggable: true,
       position: "start",
-      onDrop: (source, target) => {
+      onDrop: function (source, target) {
         const move = game.move({
           from: source,
           to: target,
@@ -92,19 +93,8 @@
 
         if (move === null) return "snapback";
 
-        addCoachMessage(
-          `Move played: <strong>${move.san}</strong>`
-        );
+        addCoachMessage("Move played: <strong>" + move.san + "</strong>");
       }
     });
 
-    function addCoachMessage(text) {
-      const coach = document.getElementById("coach");
-      const p = document.createElement("p");
-      p.innerHTML = `<strong>Coach:</strong> ${text}`;
-      coach.appendChild(p);
-      coach.scrollTop = coach.scrollHeight;
-    }
-  </script>
-</body>
-  </html>
+    function addCoachMessage(text)

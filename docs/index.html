@@ -5,28 +5,37 @@
   <title>Offline Chess Coach</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Chessboard styles -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"
-  />
-
   <style>
     body {
       margin: 0;
       background: #0f172a;
       color: #e5e7eb;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: system-ui, sans-serif;
       display: flex;
       flex-direction: column;
       height: 100vh;
     }
 
     #board {
-      width: 100%;
-      max-width: 420px;
+      width: 90vw;
+      max-width: 360px;
+      aspect-ratio: 1 / 1;
       margin: 16px auto;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      border: 2px solid #334155;
     }
+
+    .square {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      user-select: none;
+    }
+
+    .light { background: #cbd5e1; }
+    .dark  { background: #475569; }
 
     #coach {
       flex: 1;
@@ -34,11 +43,6 @@
       background: #020617;
       border-top: 1px solid #1e293b;
       overflow-y: auto;
-      font-size: 0.95rem;
-    }
-
-    #coach p {
-      margin: 0 0 8px;
     }
 
     #controls {
@@ -62,6 +66,7 @@
 </head>
 
 <body>
+
   <div id="board"></div>
 
   <div id="coach">
@@ -73,28 +78,28 @@
     <button disabled>❓ Why?</button>
   </div>
 
-  <!-- REQUIRED LIBRARIES (ORDER MATTERS) -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://unpkg.com/chess.js@1.0.0/chess.min.js"></script>
-  <script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
-
   <script>
-    const game = new Chess();
+    const boardEl = document.getElementById("board");
 
-    const board = Chessboard("board", {
-      draggable: true,
-      position: "start",
-      onDrop: function (source, target) {
-        const move = game.move({
-          from: source,
-          to: target,
-          promotion: "q"
-        });
+    const pieces = [
+      "♜","♞","♝","♛","♚","♝","♞","♜",
+      "♟","♟","♟","♟","♟","♟","♟","♟",
+      "","","","","","","","",
+      "","","","","","","","",
+      "","","","","","","","",
+      "","","","","","","","",
+      "♙","♙","♙","♙","♙","♙","♙","♙",
+      "♖","♘","♗","♕","♔","♗","♘","♖"
+    ];
 
-        if (move === null) return "snapback";
+    for (let i = 0; i < 64; i++) {
+      const square = document.createElement("div");
+      square.className =
+        "square " + ((Math.floor(i / 8) + i) % 2 === 0 ? "light" : "dark");
+      square.textContent = pieces[i];
+      boardEl.appendChild(square);
+    }
+  </script>
 
-        addCoachMessage("Move played: <strong>" + move.san + "</strong>");
-      }
-    });
-
-    function addCoachMessage(text)
+</body>
+  </html>

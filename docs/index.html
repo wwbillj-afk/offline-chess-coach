@@ -1,111 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Offline Chess Coach</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Offline Chess Coach</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- REQUIRED: jQuery -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<style>
+  body {
+    margin: 0;
+    background: #0f172a;
+    color: #e5e7eb;
+    font-family: system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
 
-  <!-- Chessboard styles -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"
-  />
+  #board {
+    width: 90vw;
+    max-width: 360px;
+    aspect-ratio: 1 / 1;
+    margin: 16px auto;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    border: 2px solid #334155;
+  }
 
-  <style>
-    body {
-      margin: 0;
-      background: #0f172a;
-      color: #e5e7eb;
-      font-family: system-ui, sans-serif;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
+  .square {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    user-select: none;
+  }
 
-    #board {
-      width: 90vw;
-      max-width: 360px;
-      margin: 16px auto;
-    }
+  .light { background: #cbd5e1; }
+  .dark  { background: #475569; }
 
-    #coach {
-      flex: 1;
-      padding: 12px;
-      background: #020617;
-      border-top: 1px solid #1e293b;
-      overflow-y: auto;
-    }
+  #coach {
+    flex: 1;
+    padding: 12px;
+    background: #020617;
+    border-top: 1px solid #1e293b;
+  }
 
-    #controls {
-      display: flex;
-      gap: 8px;
-      padding: 12px;
-      background: #020617;
-      border-top: 1px solid #1e293b;
-    }
+  #controls {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    background: #020617;
+    border-top: 1px solid #1e293b;
+  }
 
-    button {
-      flex: 1;
-      padding: 12px;
-      background: #1e293b;
-      color: #e5e7eb;
-      border: none;
-      border-radius: 8px;
-      font-size: 0.9rem;
-    }
-  </style>
+  button {
+    flex: 1;
+    padding: 12px;
+    background: #1e293b;
+    color: #e5e7eb;
+    border: none;
+    border-radius: 8px;
+  }
+</style>
 </head>
 
 <body>
 
-  <div id="board"></div>
+<div id="board"></div>
 
-  <div id="coach">
-    <p><strong>Coach:</strong> Welcome. Make your first move.</p>
-  </div>
+<div id="coach">
+  <strong>Coach:</strong> Tap a piece to move it.
+</div>
 
-  <div id="controls">
-    <button disabled>🎙 Push to Talk</button>
-    <button disabled>❓ Why?</button>
-  </div>
+<div id="controls">
+  <button disabled>🎙 Push to Talk</button>
+  <button disabled>❓ Why?</button>
+</div>
 
-  <!-- Libraries -->
-  <script src="https://unpkg.com/chess.js@1.0.0/chess.min.js"></script>
-  <script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+<script>
+  const boardEl = document.getElementById("board");
 
-  <script>
-    const game = new Chess();
+  const pieces = {
+    a1:"♖", b1:"♘", c1:"♗", d1:"♕", e1:"♔", f1:"♗", g1:"♘", h1:"♖",
+    a2:"♙", b2:"♙", c2:"♙", d2:"♙", e2:"♙", f2:"♙", g2:"♙", h2:"♙",
+    a7:"♟", b7:"♟", c7:"♟", d7:"♟", e7:"♟", f7:"♟", g7:"♟", h7:"♟",
+    a8:"♜", b8:"♞", c8:"♝", d8:"♛", e8:"♚", f8:"♝", g8:"♞", h8:"♜"
+  };
 
-    const board = Chessboard("board", {
-      draggable: false,
-      position: "start",
-      pieceTheme:
-        "https://unpkg.com/chessboardjs@1.0.0/dist/img/chesspieces/wikipedia/{piece}.png",
+  let selected = null;
 
-      onDrop: function (source, target) {
-        const move = game.move({
-          from: source,
-          to: target,
-          promotion: "q"
-        });
-
-        if (move === null) return "snapback";
-
-        addCoach("Move played: <strong>" + move.san + "</strong>");
+  function drawBoard() {
+    boardEl.innerHTML = "";
+    for (let r = 8; r >= 1; r--) {
+      for (let c = 0; c < 8; c++) {
+        const square = "abcdefgh"[c] + r;
+        const div = document.createElement("div");
+        div.className = "square " + ((r + c) % 2 ? "dark" : "light");
+        div.textContent = pieces[square] || "";
+        div.onclick = () => tap(square);
+        boardEl.appendChild(div);
       }
-    });
-
-    function addCoach(text) {
-      const coach = document.getElementById("coach");
-      const p = document.createElement("p");
-      p.innerHTML = "<strong>Coach:</strong> " + text;
-      coach.appendChild(p);
-      coach.scrollTop = coach.scrollHeight;
     }
-  </script>
+  }
+
+  function tap(square) {
+    if (selected && pieces[selected]) {
+      pieces[square] = pieces[selected];
+      delete pieces[selected];
+      selected = null;
+      drawBoard();
+      document.getElementById("coach").innerHTML =
+        "<strong>Coach:</strong> Move played.";
+    } else if (pieces[square]) {
+      selected = square;
+    }
+  }
+
+  drawBoard();
+</script>
 
 </body>
-    </html>
+</html>

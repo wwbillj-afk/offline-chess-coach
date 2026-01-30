@@ -8,204 +8,133 @@
 <style>
 body {
   margin: 0;
-  background: #0f172a;
-  color: #e5e7eb;
+  background: #121212;
+  color: #ffffff;
   font-family: system-ui, sans-serif;
+  padding-bottom: 72px; /* space for bottom nav */
 }
 
-#board-wrapper {
-  max-width: 360px;
-  margin: 16px auto;
-  padding-top: 100%;
-  position: relative;
+.header {
+  padding: 16px;
+  font-size: 1.4rem;
+  font-weight: 600;
 }
 
-#board {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  border: 3px solid #334155;
+.section {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #222;
 }
 
-.square {
+.preview {
+  width: 72px;
+  height: 72px;
+  background: #1e293b;
+  border-radius: 12px;
+  margin-right: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.2rem;
+  font-size: 2rem;
 }
 
-.light { background: #f0d9b5; }
-.dark  { background: #b58863; }
-
-.white { color: #fff; text-shadow: 0 0 3px #000; }
-.black { color: #111; text-shadow: 0 0 3px #fff; }
-
-#coach {
-  padding: 12px;
-  background: #020617;
-  min-height: 60px;
+.text h3 {
+  margin: 0;
+  font-size: 1.1rem;
 }
 
-#controls {
-  padding: 12px;
+.text p {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: #b0b0b0;
 }
 
-button {
-  width: 100%;
-  padding: 12px;
-  background: #1e293b;
-  color: #e5e7eb;
-  border: none;
-  border-radius: 8px;
+.play-button {
+  margin: 20px 16px;
+  background: #7cb342;
+  color: #000;
+  font-size: 1.1rem;
+  padding: 16px;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.play-button a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Bottom Navigation */
+.nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: #0f172a;
+  display: flex;
+  border-top: 1px solid #1e293b;
+}
+
+.nav a {
+  flex: 1;
+  text-align: center;
+  padding-top: 6px;
+  font-size: 0.75rem;
+  color: #cbd5f5;
+  text-decoration: none;
+}
+
+.nav span {
+  display: block;
+  font-size: 1.4rem;
+  margin-bottom: 2px;
 }
 </style>
 </head>
 
 <body>
 
-<div id="board-wrapper">
-  <div id="board"></div>
+<div class="header">Offline Chess Coach</div>
+
+<div class="section">
+  <div class="preview">▶️</div>
+  <div class="text">
+    <h3>Play</h3>
+    <p>Play a focused offline game</p>
+  </div>
 </div>
 
-<div id="coach"><strong>Coach:</strong> Play mode.</div>
-
-<div id="controls">
-  <button onclick="startTactics()">⚔️ Start Tactics (10 puzzles)</button>
+<div class="section">
+  <div class="preview">🧩</div>
+  <div class="text">
+    <h3>Solve Puzzles</h3>
+    <p>Find the best moves</p>
+  </div>
 </div>
 
-<script src="https://unpkg.com/chess.js@1.0.0/chess.min.js"></script>
+<div class="section">
+  <div class="preview">🎓</div>
+  <div class="text">
+    <h3>Training</h3>
+    <p>Learn strategy and ideas</p>
+  </div>
+</div>
 
-<script>
-const boardEl = document.getElementById("board");
-const coachEl = document.getElementById("coach");
+<div class="play-button">
+  <a href="play.html">Play</a>
+</div>
 
-let game = new Chess();
-let selected = null;
-let mode = "play";
-let puzzleIndex = 0;
-
-/* ===== TACTICS DATABASE ===== */
-
-const puzzles = [
-{
-  fen: "4k3/3q4/8/8/8/8/4K2R/8 w - - 0 1",
-  solution: ["h2h8"],
-  difficulty: "easy",
-  theme: "mate",
-  explanation: {
-    idea: "Back-rank mate.",
-    principle: "The king has no escape squares."
-  }
-},
-{
-  fen: "6k1/3q4/8/8/8/5N2/8/6K1 w - - 0 1",
-  solution: ["f3e5"],
-  difficulty: "medium",
-  theme: "fork",
-  explanation: {
-    idea: "Knight fork.",
-    principle: "One piece attacks two valuable targets."
-  }
-}
-];
-
-/* ===== DRAW BOARD ===== */
-
-function drawBoard() {
-  boardEl.innerHTML = "";
-  const board = game.board();
-
-  for (let r = 7; r >= 0; r--) {
-    for (let c = 0; c < 8; c++) {
-      const sq = "abcdefgh"[c] + (r+1);
-      const div = document.createElement("div");
-      div.className = "square " + ((r + c) % 2 ? "dark" : "light");
-
-      const piece = game.get(sq);
-      if (piece) {
-        const span = document.createElement("span");
-        span.textContent = pieceUnicode(piece);
-        span.className = piece.color === "w" ? "white" : "black";
-        div.appendChild(span);
-      }
-
-      div.onclick = () => tapSquare(sq);
-      boardEl.appendChild(div);
-    }
-  }
-}
-
-function pieceUnicode(p) {
-  const map = {
-    wp:"♙", wr:"♖", wn:"♘", wb:"♗", wq:"♕", wk:"♔",
-    bp:"♟", br:"♜", bn:"♞", bb:"♝", bq:"♛", bk:"♚"
-  };
-  return map[p.color + p.type];
-}
-
-/* ===== INPUT HANDLING ===== */
-
-function tapSquare(square) {
-  if (!selected) {
-    selected = square;
-    return;
-  }
-
-  const move = game.move({
-    from: selected,
-    to: square,
-    promotion: "q"
-  });
-
-  selected = null;
-
-  if (!move) return;
-
-  drawBoard();
-  handleMove(move.san);
-}
-
-function handleMove() {
-  if (mode !== "tactics") return;
-
-  const puzzle = puzzles[puzzleIndex];
-  const playedMoves = game.history({ verbose: false });
-
-  if (playedMoves.join(" ") === puzzle.solution.join(" ")) {
-    coachEl.innerHTML =
-      `<strong>Coach:</strong> Correct. ${puzzle.explanation.idea} ${puzzle.explanation.principle}`;
-    setTimeout(nextPuzzle, 1500);
-  }
-}
-
-/* ===== TACTICS FLOW ===== */
-
-function startTactics() {
-  mode = "tactics";
-  puzzleIndex = 0;
-  loadPuzzle();
-}
-
-function loadPuzzle() {
-  game = new Chess(puzzles[puzzleIndex].fen);
-  coachEl.innerHTML =
-    `<strong>Coach:</strong> Puzzle ${puzzleIndex+1} of 10. Your move.`;
-  drawBoard();
-}
-
-function nextPuzzle() {
-  puzzleIndex++;
-  if (puzzleIndex >= puzzles.length) {
-    coachEl.innerHTML =
-      "<strong>Coach:</strong> Training complete. Well done.";
-    return;
-  }
-  loadPuzzle();
-}
-
-drawBoard();
-</script>
+<!-- Bottom Navigation -->
+<div class="nav">
+  <a href="index.html"><span>🏠</span>Home</a>
+  <a href="puzzles.html"><span>🧩</span>Puzzles</a>
+  <a href="training.html"><span>🎓</span>Learn</a>
+  <a href="#"><span>👀</span>Watch</a>
+  <a href="#"><span>☰</span>More</a>
+</div>
 
 </body>
   </html>

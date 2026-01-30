@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Offline Chess Coach</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Chessboard styles -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"
+  />
+
+  <style>
+    body {
+      margin: 0;
+      background: #0f172a;
+      color: #e5e7eb;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    #board {
+      width: 100%;
+      max-width: 420px;
+      margin: 16px auto;
+    }
+
+    #coach {
+      flex: 1;
+      padding: 12px;
+      background: #020617;
+      border-top: 1px solid #1e293b;
+      overflow-y: auto;
+      font-size: 0.95rem;
+    }
+
+    #coach p {
+      margin: 0 0 8px;
+    }
+
+    #controls {
+      display: flex;
+      gap: 8px;
+      padding: 12px;
+      background: #020617;
+      border-top: 1px solid #1e293b;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      background: #1e293b;
+      color: #e5e7eb;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="board"></div>
+
+  <div id="coach">
+    <p><strong>Coach:</strong> Welcome. Make your first move.</p>
+  </div>
+
+  <div id="controls">
+    <button disabled>🎙 Push to Talk</button>
+    <button disabled>❓ Why?</button>
+  </div>
+
+  <!-- Libraries -->
+  <script src="https://unpkg.com/chess.js@1.0.0/chess.min.js"></script>
+  <script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+
+  <script>
+    const game = new Chess();
+
+    const board = Chessboard("board", {
+      draggable: true,
+      position: "start",
+      onDrop: (source, target) => {
+        const move = game.move({
+          from: source,
+          to: target,
+          promotion: "q"
+        });
+
+        if (move === null) return "snapback";
+
+        addCoachMessage(
+          `Move played: <strong>${move.san}</strong>`
+        );
+      }
+    });
+
+    function addCoachMessage(text) {
+      const coach = document.getElementById("coach");
+      const p = document.createElement("p");
+      p.innerHTML = `<strong>Coach:</strong> ${text}`;
+      coach.appendChild(p);
+      coach.scrollTop = coach.scrollHeight;
+    }
+  </script>
+</body>
+  </html>

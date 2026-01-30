@@ -1,9 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Offline Chess Coach</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Chessboard styles -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"
+  />
 
   <style>
     body {
@@ -19,32 +25,7 @@
     #board {
       width: 90vw;
       max-width: 360px;
-      aspect-ratio: 1 / 1;
       margin: 16px auto;
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      border: 2px solid #334155;
-    }
-
-    .square {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      user-select: none;
-    }
-
-    .light { background: #cbd5e1; }
-    .dark  { background: #475569; }
-
-    .selected {
-      outline: 4px solid #22c55e;
-      outline-offset: -4px;
-    }
-
-    img {
-      width: 90%;
-      height: 90%;
-      pointer-events: none;
     }
 
     #coach {
@@ -80,7 +61,7 @@
   <div id="board"></div>
 
   <div id="coach">
-    <p><strong>Coach:</strong> Tap one of your pieces, then tap a destination square.</p>
+    <p><strong>Coach:</strong> Welcome. Make your first move.</p>
   </div>
 
   <div id="controls">
@@ -88,76 +69,32 @@
     <button disabled>❓ Why?</button>
   </div>
 
+  <!-- Libraries -->
   <script src="https://unpkg.com/chess.js@1.0.0/chess.min.js"></script>
+  <script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
 
   <script>
     const game = new Chess();
-    const boardEl = document.getElementById("board");
-    let selectedSquare = null;
 
-    function renderBoard() {
-      boardEl.innerHTML = "";
-      const board = game.board();
+    const board = Chessboard("board", {
+      draggable: false,
+      position: "start",
 
-      for (let row = 7; row >= 0; row--) {
-        for (let col = 0; col < 8; col++) {
-          const squareEl = document.createElement("div");
-          const isLight = (row + col) % 2 === 0;
-          squareEl.className = "square " + (isLight ? "light" : "dark");
+      pieceTheme:
+        "https://unpkg.com/chessboardjs@1.0.0/dist/img/chesspieces/wikipedia/{piece}.png",
 
-          const square = "abcdefgh"[col] + (row + 1);
-          squareEl.dataset.square = square;
+      onDrop: function (source, target) {
+        const move = game.move({
+          from: source,
+          to: target,
+          promotion: "q"
+        });
 
-          const piece = board[row][col];
-          if (piece) {
-            squareEl.innerHTML = pieceImg(piece);
-          }
+        if (move === null) return "snapback";
 
-          if (square === selectedSquare) {
-            squareEl.classList.add("selected");
-          }
-
-          squareEl.onclick = () => onSquareTap(square);
-          boardEl.appendChild(squareEl);
-        }
-      }
-    }
-
-    function onSquareTap(square) {
-      const piece = game.get(square);
-
-      if (!selectedSquare) {
-        if (!piece || piece.color !== game.turn()) {
-          addCoach("Select one of your own pieces.");
-          return;
-        }
-        selectedSquare = square;
-        renderBoard();
-        return;
-      }
-
-      const move = game.move({
-        from: selectedSquare,
-        to: square,
-        promotion: "q"
-      });
-
-      selectedSquare = null;
-
-      if (move) {
         addCoach("Move played: <strong>" + move.san + "</strong>");
-      } else {
-        addCoach("That move is not legal.");
       }
-
-      renderBoard();
-    }
-
-    function pieceImg(piece) {
-      const color = piece.color === "w" ? "w" : "b";
-      const type = piece.type.toUpperCase();
-      return `<img src="https://raw.githubusercontent.com/lichess-org/lila/master/public/piece/cburnett/${color}${type}.svg">`;
-    }
+    });
 
     function addCoach(text) {
       const coach = document.getElementById("coach");
@@ -166,8 +103,6 @@
       coach.appendChild(p);
       coach.scrollTop = coach.scrollHeight;
     }
-
-    renderBoard();
   </script>
 
 </body>

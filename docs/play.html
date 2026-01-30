@@ -1,88 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Play | Offline Chess Coach</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<title>Play</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Chessboard CSS -->
-<link
-  rel="stylesheet"
-  href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"
-/>
+<link rel="stylesheet"
+href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
 
 <style>
 body {
   margin: 0;
   background: #0b1220;
   color: #e5e7eb;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: system-ui, sans-serif;
 }
 
-/* Board container MUST have height on mobile */
-#board-wrapper {
+#board-area {
   width: 100%;
-  max-width: 420px;
-  margin: 16px auto;
+  max-width: 360px;
+  margin: 20px auto;
 }
 
 #board {
   width: 100%;
+  min-height: 360px;
 }
 
-/* Coach panel */
 #coach {
   position: fixed;
-  bottom: 72px;
+  bottom: 90px;
   right: 12px;
   background: #111827;
   padding: 10px 14px;
   border-radius: 14px;
-  font-size: 0.85rem;
-  opacity: 0.9;
-}
-
-/* Bottom nav spacing */
-.spacer {
-  height: 90px;
+  font-size: 0.9rem;
 }
 </style>
 </head>
 
 <body>
 
-<div id="board-wrapper">
+<div id="board-area">
   <div id="board"></div>
 </div>
 
 <div id="coach">Coach: Your move.</div>
 
-<div class="spacer"></div>
-
-<!-- Libraries -->
 <script src="https://unpkg.com/chess.js@1.0.0/chess.min.js"></script>
 <script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
 
 <script>
-const game = new Chess();
+window.addEventListener("load", () => {
+  const game = new Chess();
 
-const board = Chessboard("board", {
-  draggable: true,
-  position: "start",
-  pieceTheme:
-    "https://lichess1.org/assets/piece/staunton/{piece}.svg",
-  onDrop: function (source, target) {
-    const move = game.move({
-      from: source,
-      to: target,
-      promotion: "q"
-    });
-
-    if (move === null) return "snapback";
-
-    document.getElementById("coach").innerText =
-      "Coach: Played " + move.san;
-  }
+  const board = Chessboard("board", {
+    draggable: true,
+    position: "start",
+    pieceTheme:
+      "https://lichess1.org/assets/piece/staunton/{piece}.svg",
+    onDrop: function (source, target) {
+      const move = game.move({
+        from: source,
+        to: target,
+        promotion: "q"
+      });
+      if (move === null) return "snapback";
+      document.getElementById("coach").innerText =
+        "Coach: Played " + move.san;
+    }
+  });
 });
 </script>
 

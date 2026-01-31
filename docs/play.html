@@ -3,52 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <title>Play vs Coach</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"
-  />
+  <!-- Chessboard CSS -->
+  <link rel="stylesheet"
+    href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css" />
 
   <style>
     body {
       margin: 0;
-      background: #0f172a;
-      color: #e5e7eb;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      height: 100vh;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(#0b132b, #1c2541);
+      color: white;
+      text-align: center;
     }
 
     h1 {
-      margin: 12px 0;
+      margin-top: 20px;
     }
 
     #board {
       width: 90vw;
-      max-width: 420px;
+      max-width: 400px;
+      margin: 20px auto;
     }
 
-    #coach {
-      margin-top: 14px;
-      padding: 10px 16px;
-      background: #020617;
-      border-radius: 16px;
-      font-size: 0.95rem;
+    .coach {
+      background: rgba(0,0,0,0.4);
+      padding: 12px 20px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-top: 10px;
     }
   </style>
 </head>
-
 <body>
 
   <h1>Play vs Coach</h1>
 
   <div id="board"></div>
 
-  <div id="coach">Coach: Your move.</div>
+  <div class="coach">Coach: Your move.</div>
 
+  <!-- Libraries -->
   <script src="https://unpkg.com/chess.js@1.0.0/chess.min.js"></script>
   <script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
 
@@ -56,10 +52,10 @@
     const game = new Chess();
 
     const board = Chessboard('board', {
-      position: 'start',
       draggable: true,
+      position: 'start',
       pieceTheme:
-        'https://chessboardjs.com/img/chesspieces/cburnett/{piece}.png',
+        'https://unpkg.com/chessboardjs@1.0.0/img/chesspieces/wikipedia/{piece}.png',
 
       onDrop: function (source, target) {
         const move = game.move({
@@ -69,9 +65,6 @@
         });
 
         if (move === null) return 'snapback';
-
-        document.getElementById('coach').innerText =
-          'Coach: Move played (' + move.san + ').';
       }
     });
   </script>

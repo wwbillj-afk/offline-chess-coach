@@ -1,219 +1,220 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Play vs Coach — Offline Chess Coach (Fallback)</title>
+<meta charset="UTF-8">
+<title>Play vs Coach</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
 
 <style>
-  :root{
-    --bg:#0b1220;
-    --panel:#0b1220;
-    --coach:#071226;
-    --light:#dbe8f3;
-    --dark:#5f6f86;
-    --accent:#7cb342;
-  }
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #0b1d33, #020617);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #e5e7eb;
+}
 
-  html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,var(--bg),#07102a);color:#e6eef6}
-  .container{max-width:720px;margin:0 auto;padding:12px}
-  header{display:flex;align-items:center;justify-content:center;padding:8px}
-  h1{margin:0;font-size:1.5rem}
-  #boardWrap{display:flex;justify-content:center;margin-top:8px}
-  #board{
-    width:90vw; max-width:420px; aspect-ratio:1/1;
-    display:grid; grid-template-columns:repeat(8,1fr);
-    gap:0; border-radius:10px; overflow:hidden; box-shadow:0 18px 40px rgba(0,0,0,0.6);
-    border:3px solid rgba(255,255,255,0.02);
+header {
+  padding: 14px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+#container {
+  display: flex;
+  height: calc(100vh - 56px);
+}
+
+/* BOARD AREA */
+#board-area {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#board {
+  width: min(92vw, 480px);
+  border-radius: 14px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+}
+
+/* COACH PANEL */
+#coach-panel {
+  width: 320px;
+  background: linear-gradient(180deg, #020617, #020617);
+  border-left: 1px solid #1e293b;
+  display: flex;
+  flex-direction: column;
+}
+
+#coach-header {
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid #1e293b;
+}
+
+#coach-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f472b6, #fb7185);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  color: #020617;
+}
+
+#coach-name {
+  font-weight: 600;
+}
+
+#coach-body {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.coach-msg {
+  margin-bottom: 10px;
+}
+
+#coach-footer {
+  padding: 10px;
+  border-top: 1px solid #1e293b;
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 999px;
+  border: none;
+  background: #1e293b;
+  color: #e5e7eb;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #334155;
+}
+
+/* MOBILE */
+@media (max-width: 900px) {
+  #coach-panel {
+    display: none;
   }
-  .sq{display:flex;align-items:center;justify-content:center;font-size:calc(18px + 3vw); user-select:none; touch-action:manipulation;}
-  .light{background:linear-gradient(145deg,#dfe8f3,#c9d6e8); color:#0b1220}
-  .dark{background:linear-gradient(145deg,#5a6e88,#4b5b73); color:#e9f2ff}
-  .sq.selected{outline:4px solid rgba(255,215,0,0.35)}
-  .coach{display:flex;justify-content:center;margin:16px auto;padding:10px 16px;background:rgba(255,255,255,0.03);border-radius:20px;width:calc(90vw);max-width:420px}
-  .controls{display:flex;gap:8px;justify-content:center;margin-top:12px}
-  .btn{padding:10px 14px;border-radius:10px;background:#1e293b;color:#e6eef6;border:none;min-width:110px}
-  .btn.primary{background:var(--accent);color:#012100;font-weight:700}
-  .status{margin-top:10px;text-align:center;color:#cdd7e8;font-size:0.95rem}
-  footer{height:60px} /* space for nav */
-  @media(min-width:800px){
-    .container{max-width:900px}
-    .sq{font-size:48px}
-  }
+}
 </style>
 </head>
+
 <body>
-  <div class="container">
-    <header><h1>Play vs Coach</h1></header>
 
-    <div id="boardWrap">
-      <div id="board" aria-label="Chess board"></div>
-    </div>
+<header>Play vs Coach</header>
 
-    <div class="coach" id="coach">Coach: Your move.</div>
+<div id="container">
 
-    <div class="controls">
-      <button class="btn" id="resetBtn">Reset</button>
-      <button class="btn primary" id="flipBtn">Flip Board</button>
-    </div>
-
-    <div class="status" id="status">Tap a piece, then tap destination (mobile-friendly).</div>
+  <div id="board-area">
+    <div id="board"></div>
   </div>
 
-  <footer></footer>
+  <div id="coach-panel">
+    <div id="coach-header">
+      <div id="coach-avatar">♛</div>
+      <div id="coach-name">Coach</div>
+    </div>
+
+    <div id="coach-body"></div>
+
+    <div id="coach-footer">
+      <button onclick="why()">Why?</button>
+      <button onclick="toggleCoach()">Hide</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chess.js@0.13.4/chess.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
 
 <script>
-/*
-  Self-contained mobile-friendly chessboard (fallback).
-  - No external scripts or assets.
-  - Tap to select + tap to move.
-  - Unicode pieces used for immediate display.
-  - Promotion to queen auto (when pawn reaches last rank).
-  - Not a full rules engine — basic move changes only (valid for practice).
-  This is an interim working board so you can continue building.
-*/
+/* ===== NAME MEMORY ===== */
+let playerName = localStorage.getItem("playerName");
+if (!playerName) {
+  playerName = prompt("Hi! What’s your name?");
+  if (!playerName) playerName = "Friend";
+  localStorage.setItem("playerName", playerName);
+}
 
-/* Unicode piece glyphs */
-const glyphs = {
-  'r':'♜','n':'♞','b':'♝','q':'♛','k':'♚','p':'♟',
-  'R':'♖','N':'♘','B':'♗','Q':'♕','K':'♔','P':'♙'
-};
+/* ===== GAME SETUP ===== */
+const game = new Chess();
+const board = Chessboard("board", {
+  draggable: true,
+  position: "start",
+  orientation: "white",
+  pieceTheme: "https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/img/chesspieces/wikipedia/{piece}.png",
+  onDrop: onDrop
+});
 
-/* Starting FEN-like initial array (index 0 = a8, 63 = h1) */
-let boardState = [
-  'r','n','b','q','k','b','n','r',
-  'p','p','p','p','p','p','p','p',
-  '','','','','','','','',
-  '','','','','','','','',
-  '','','','','','','','',
-  '','','','','','','','',
-  'P','P','P','P','P','P','P','P',
-  'R','N','B','Q','K','B','N','R'
-];
+const coachBody = document.getElementById("coach-body");
 
-let flipped = false;
-let selectedSquare = null;
+/* ===== COACH ===== */
+function coachSay(text) {
+  const div = document.createElement("div");
+  div.className = "coach-msg";
+  div.innerHTML = `<strong>Coach:</strong> ${text}`;
+  coachBody.appendChild(div);
+  coachBody.scrollTop = coachBody.scrollHeight;
+}
 
-/* generate board squares */
-const boardEl = document.getElementById('board');
-function drawBoard(){
-  boardEl.innerHTML = '';
-  // order indices depending on flipped state
-  const indices = [];
-  if(!flipped){
-    for(let r=0;r<8;r++){
-      for(let c=0;c<8;c++){
-        indices.push(r*8 + c);
-      }
-    }
-  } else {
-    for(let r=7;r>=0;r--){
-      for(let c=7;c>=0;c--){
-        indices.push(r*8 + c);
-      }
-    }
-  }
+coachSay(`Welcome, ${playerName}. Let’s play thoughtfully.`);
 
-  indices.forEach(idx=>{
-    const cell = document.createElement('div');
-    const row = Math.floor(idx/8);
-    const col = idx%8;
-    const isDark = (row + col) % 2 === 1;
-    cell.className = 'sq ' + (isDark ? 'dark' : 'light');
-    cell.dataset.idx = idx;
-    cell.setAttribute('role','button');
-    cell.setAttribute('aria-label','square ' + idx);
-    const value = boardState[idx] || '';
-    cell.textContent = value ? glyphs[value] : '';
-    cell.addEventListener('click', onSquareClick);
-    boardEl.appendChild(cell);
+/* ===== MOVE HANDLING ===== */
+function onDrop(source, target) {
+  const move = game.move({
+    from: source,
+    to: target,
+    promotion: "q"
   });
-  updateStatus('');
+
+  if (move === null) return "snapback";
+
+  gentleFeedback(move);
 }
 
-/* simple helper: convert index to algebraic (for debugging) */
-function idxToAlg(i){
-  const file = String.fromCharCode('a'.charCodeAt(0) + (i % 8));
-  const rank = 8 - Math.floor(i/8);
-  return file + rank;
-}
-
-/* click handler */
-function onSquareClick(e){
-  const idx = Number(e.currentTarget.dataset.idx);
-  const piece = boardState[idx];
-  if(selectedSquare === null){
-    if(!piece){
-      updateStatus('Pick a piece first.');
-      return;
-    }
-    selectedSquare = idx;
-    highlightSquare(idx,true);
-    updateStatus('Selected ' + (piece ? piece : '') + ' at ' + idxToAlg(idx) + '. Tap destination.');
-    return;
+/* ===== GENTLE COACH LOGIC ===== */
+function gentleFeedback(move) {
+  if (move.flags.includes("c")) {
+    coachSay("Nice capture. Always consider piece safety afterward.");
+  } else if (move.san.includes("e4") || move.san.includes("d4")) {
+    coachSay("Good. Central control is a fundamental principle.");
+  } else if (game.in_check()) {
+    coachSay("Check! Now think about follow-up threats.");
+  } else {
+    coachSay("Interesting idea. What was your plan here?");
   }
-
-  // if tapped same square -> clear selection
-  if(selectedSquare === idx){
-    highlightSquare(selectedSquare,false);
-    selectedSquare = null;
-    updateStatus('Selection cleared.');
-    return;
-  }
-
-  // perform move (no legality check)
-  const movingPiece = boardState[selectedSquare];
-  boardState[idx] = movingPiece;
-  boardState[selectedSquare] = '';
-  // auto-promotion if pawn reaches last rank
-  if(movingPiece === 'P' && Math.floor(idx/8) === 0) boardState[idx] = 'Q';
-  if(movingPiece === 'p' && Math.floor(idx/8) === 7) boardState[idx] = 'q';
-
-  highlightSquare(selectedSquare,false);
-  selectedSquare = null;
-  drawBoard();
-  updateStatus('Moved to ' + idxToAlg(idx) + '.');
 }
 
-/* visual highlight */
-function highlightSquare(index, on){
-  const sq = boardEl.querySelector('[data-idx="'+index+'"]');
-  if(!sq) return;
-  if(on) sq.classList.add('selected'); else sq.classList.remove('selected');
+/* ===== WHY BUTTON ===== */
+function why() {
+  coachSay("Because chess is about ideas, not just moves. Ask what each piece is trying to do.");
 }
 
-/* update status / coach line */
-const statusEl = document.getElementById('status');
-function updateStatus(text){
-  if(!text) { statusEl.textContent = 'Tap a piece, then tap destination (mobile friendly).'; return; }
-  statusEl.textContent = text;
+/* ===== TOGGLE COACH ===== */
+function toggleCoach() {
+  const panel = document.getElementById("coach-panel");
+  panel.style.display = panel.style.display === "none" ? "flex" : "none";
 }
-
-/* Flip board button */
-document.getElementById('flipBtn').addEventListener('click', ()=>{
-  flipped = !flipped;
-  drawBoard();
-});
-
-/* Reset button */
-document.getElementById('resetBtn').addEventListener('click', ()=>{
-  boardState = [
-    'r','n','b','q','k','b','n','r',
-    'p','p','p','p','p','p','p','p',
-    '','','','','','','','',
-    '','','','','','','','',
-    '','','','','','','','',
-    '','','','','','','','',
-    'P','P','P','P','P','P','P','P',
-    'R','N','B','Q','K','B','N','R'
-  ];
-  selectedSquare = null;
-  drawBoard();
-  updateStatus('Board reset.');
-});
-
-/* initial draw */
-drawBoard();
 </script>
+
 </body>
   </html>

@@ -1,75 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Play</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-body {
-  margin: 0;
-  background: #0b1220;
-  color: #e5e7eb;
-  font-family: system-ui, sans-serif;
-}
-
-#board {
-  width: 320px;
-  height: 320px;
-  margin: 30px auto;
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  border: 2px solid #334155;
-}
-
-.square {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32px;
-}
-
-.dark { background: #475569; }
-.light { background: #cbd5e1; }
-
-#coach {
-  position: fixed;
-  bottom: 90px;
-  right: 12px;
-  background: #111827;
-  padding: 10px 14px;
-  border-radius: 14px;
-  font-size: 0.9rem;
-}
-</style>
-</head>
-
-<body>
-
-<div id="board"></div>
-<div id="coach">Coach: Your move.</div>
-
 <script>
-const boardEl = document.getElementById("board");
+  const game = new Chess();
 
-const pieces = [
-  "♜","♞","♝","♛","♚","♝","♞","♜",
-  "♟","♟","♟","♟","♟","♟","♟","♟",
-  "","","","","","","","",
-  "","","","","","","","",
-  "","","","","","","","",
-  "","","","","","","","",
-  "♙","♙","♙","♙","♙","♙","♙","♙",
-  "♖","♘","♗","♕","♔","♗","♘","♖"
-];
+  const board = Chessboard('board', {
+    position: 'start',
+    draggable: true,
+    pieceTheme: 'https://chessboardjs.com/img/chesspieces/cburnett/{piece}.png',
 
-for (let i = 0; i < 64; i++) {
-  const square = document.createElement("div");
-  square.className = "square " + ((Math.floor(i/8) + i) % 2 ? "dark" : "light");
-  square.textContent = pieces[i];
-  boardEl.appendChild(square);
-}
-</script>
+    onDragStart: function (source, piece) {
+      // prevent moving black pieces
+      if (piece.startsWith('b')) return false;
+    },
 
-</body>
-  </html>
+    onDrop: function (source, target) {
+      const move = game.move({
+        from: source,
+        to: target,
+        promotion: 'q'
+      });
+
+      if (move === null) return 'snapback';
+
+      document.querySelector('.coach').innerText = 'Coach: Move played.';
+    }
+  });
+
+  // MOBILE TAP SUPPORT
+  let selectedSquare = null;
+
+  board.onSquareClick = function (square) {
+    if (!selectedSquare) {
+      selectedSquare = square;
+    } else {
+      const move = game.move({
+        from: selectedSquare,
+        to: square,
+        promotion: 'q'
+      });
+
+      selectedSquare = null;
+
+      if (move) {
+        board.position(game.fen());
+      }
+    }
+  };
+    </script>

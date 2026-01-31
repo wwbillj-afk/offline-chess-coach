@@ -27,7 +27,6 @@ header {
   height: calc(100vh - 56px);
 }
 
-/* BOARD AREA */
 #board-area {
   flex: 1;
   display: flex;
@@ -41,10 +40,9 @@ header {
   box-shadow: 0 20px 40px rgba(0,0,0,0.6);
 }
 
-/* COACH PANEL */
 #coach-panel {
   width: 320px;
-  background: linear-gradient(180deg, #020617, #020617);
+  background: #020617;
   border-left: 1px solid #1e293b;
   display: flex;
   flex-direction: column;
@@ -70,16 +68,11 @@ header {
   color: #020617;
 }
 
-#coach-name {
-  font-weight: 600;
-}
-
 #coach-body {
   flex: 1;
   padding: 12px;
   overflow-y: auto;
   font-size: 14px;
-  line-height: 1.45;
 }
 
 .coach-msg {
@@ -100,7 +93,6 @@ button {
   border: none;
   background: #1e293b;
   color: #e5e7eb;
-  font-weight: 500;
   cursor: pointer;
 }
 
@@ -108,7 +100,6 @@ button:hover {
   background: #334155;
 }
 
-/* MOBILE */
 @media (max-width: 900px) {
   #coach-panel {
     display: none;
@@ -122,7 +113,6 @@ button:hover {
 <header>Play vs Coach</header>
 
 <div id="container">
-
   <div id="board-area">
     <div id="board"></div>
   </div>
@@ -130,7 +120,7 @@ button:hover {
   <div id="coach-panel">
     <div id="coach-header">
       <div id="coach-avatar">♛</div>
-      <div id="coach-name">Coach</div>
+      <strong>Coach</strong>
     </div>
 
     <div id="coach-body"></div>
@@ -140,14 +130,14 @@ button:hover {
       <button onclick="toggleCoach()">Hide</button>
     </div>
   </div>
-
 </div>
 
+<!-- ✅ REQUIRED ORDER -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chess.js@0.13.4/chess.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
 
 <script>
-/* ===== NAME MEMORY ===== */
 let playerName = localStorage.getItem("playerName");
 if (!playerName) {
   playerName = prompt("Hi! What’s your name?");
@@ -155,30 +145,27 @@ if (!playerName) {
   localStorage.setItem("playerName", playerName);
 }
 
-/* ===== GAME SETUP ===== */
 const game = new Chess();
+
 const board = Chessboard("board", {
   draggable: true,
   position: "start",
-  orientation: "white",
   pieceTheme: "https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/img/chesspieces/wikipedia/{piece}.png",
   onDrop: onDrop
 });
 
 const coachBody = document.getElementById("coach-body");
 
-/* ===== COACH ===== */
 function coachSay(text) {
   const div = document.createElement("div");
   div.className = "coach-msg";
-  div.innerHTML = `<strong>Coach:</strong> ${text}`;
+  div.innerHTML = "<strong>Coach:</strong> " + text;
   coachBody.appendChild(div);
   coachBody.scrollTop = coachBody.scrollHeight;
 }
 
 coachSay(`Welcome, ${playerName}. Let’s play thoughtfully.`);
 
-/* ===== MOVE HANDLING ===== */
 function onDrop(source, target) {
   const move = game.move({
     from: source,
@@ -187,29 +174,23 @@ function onDrop(source, target) {
   });
 
   if (move === null) return "snapback";
-
   gentleFeedback(move);
 }
 
-/* ===== GENTLE COACH LOGIC ===== */
 function gentleFeedback(move) {
   if (move.flags.includes("c")) {
-    coachSay("Nice capture. Always consider piece safety afterward.");
-  } else if (move.san.includes("e4") || move.san.includes("d4")) {
-    coachSay("Good. Central control is a fundamental principle.");
+    coachSay("Nice capture. Think about what squares you control now.");
   } else if (game.in_check()) {
-    coachSay("Check! Now think about follow-up threats.");
+    coachSay("Check! Good awareness.");
   } else {
-    coachSay("Interesting idea. What was your plan here?");
+    coachSay("Interesting. What was your idea here?");
   }
 }
 
-/* ===== WHY BUTTON ===== */
 function why() {
-  coachSay("Because chess is about ideas, not just moves. Ask what each piece is trying to do.");
+  coachSay("Because chess is about plans, not memorization.");
 }
 
-/* ===== TOGGLE COACH ===== */
 function toggleCoach() {
   const panel = document.getElementById("coach-panel");
   panel.style.display = panel.style.display === "none" ? "flex" : "none";

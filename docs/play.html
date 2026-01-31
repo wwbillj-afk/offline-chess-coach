@@ -2,10 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Play Chess</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Play vs Coach</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Chessboard styles -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"
@@ -20,27 +19,23 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
       height: 100vh;
     }
 
-    header {
-      padding: 12px;
-      font-size: 1.2rem;
-      font-weight: bold;
+    h1 {
+      margin: 12px 0;
     }
 
     #board {
       width: 90vw;
       max-width: 420px;
-      margin-top: 10px;
     }
 
     #coach {
-      margin-top: 12px;
-      padding: 10px 14px;
+      margin-top: 14px;
+      padding: 10px 16px;
       background: #020617;
-      border-radius: 14px;
+      border-radius: 16px;
       font-size: 0.95rem;
     }
   </style>
@@ -48,51 +43,38 @@
 
 <body>
 
-  <header>Play vs Coach</header>
+  <h1>Play vs Coach</h1>
 
   <div id="board"></div>
 
   <div id="coach">Coach: Your move.</div>
 
-  <!-- Libraries -->
   <script src="https://unpkg.com/chess.js@1.0.0/chess.min.js"></script>
   <script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
 
   <script>
     const game = new Chess();
 
-    const board = Chessboard("board", {
+    const board = Chessboard('board', {
+      position: 'start',
       draggable: true,
-      position: "start",
-
-      // reliable online pieces (known to work)
       pieceTheme:
-        "https://chessboardjs.com/img/chesspieces/cburnett/{piece}.png",
+        'https://chessboardjs.com/img/chesspieces/cburnett/{piece}.png',
 
       onDrop: function (source, target) {
         const move = game.move({
           from: source,
           to: target,
-          promotion: "q"
+          promotion: 'q'
         });
 
-        if (move === null) return "snapback";
+        if (move === null) return 'snapback';
 
-        document.getElementById("coach").innerText =
-          "Coach: Move played (" + move.san + ").";
+        document.getElementById('coach').innerText =
+          'Coach: Move played (' + move.san + ').';
       }
     });
   </script>
 
 </body>
-    </html>        promotion: 'q'
-      });
-
-      selectedSquare = null;
-
-      if (move) {
-        board.position(game.fen());
-      }
-    }
-  };
-    </script>
+  </html>

@@ -1,40 +1,91 @@
-<script>
-  const game = new Chess();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Play Chess</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-  const board = Chessboard('board', {
-    position: 'start',
-    draggable: true,
-    pieceTheme: 'https://chessboardjs.com/img/chesspieces/cburnett/{piece}.png',
+  <!-- Chessboard styles -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"
+  />
 
-    onDragStart: function (source, piece) {
-      // prevent moving black pieces
-      if (piece.startsWith('b')) return false;
-    },
-
-    onDrop: function (source, target) {
-      const move = game.move({
-        from: source,
-        to: target,
-        promotion: 'q'
-      });
-
-      if (move === null) return 'snapback';
-
-      document.querySelector('.coach').innerText = 'Coach: Move played.';
+  <style>
+    body {
+      margin: 0;
+      background: #0f172a;
+      color: #e5e7eb;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
     }
-  });
 
-  // MOBILE TAP SUPPORT
-  let selectedSquare = null;
+    header {
+      padding: 12px;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
 
-  board.onSquareClick = function (square) {
-    if (!selectedSquare) {
-      selectedSquare = square;
-    } else {
-      const move = game.move({
-        from: selectedSquare,
-        to: square,
-        promotion: 'q'
+    #board {
+      width: 90vw;
+      max-width: 420px;
+      margin-top: 10px;
+    }
+
+    #coach {
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: #020617;
+      border-radius: 14px;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>Play vs Coach</header>
+
+  <div id="board"></div>
+
+  <div id="coach">Coach: Your move.</div>
+
+  <!-- Libraries -->
+  <script src="https://unpkg.com/chess.js@1.0.0/chess.min.js"></script>
+  <script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+
+  <script>
+    const game = new Chess();
+
+    const board = Chessboard("board", {
+      draggable: true,
+      position: "start",
+
+      // reliable online pieces (known to work)
+      pieceTheme:
+        "https://chessboardjs.com/img/chesspieces/cburnett/{piece}.png",
+
+      onDrop: function (source, target) {
+        const move = game.move({
+          from: source,
+          to: target,
+          promotion: "q"
+        });
+
+        if (move === null) return "snapback";
+
+        document.getElementById("coach").innerText =
+          "Coach: Move played (" + move.san + ").";
+      }
+    });
+  </script>
+
+</body>
+    </html>        promotion: 'q'
       });
 
       selectedSquare = null;

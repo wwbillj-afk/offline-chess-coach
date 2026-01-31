@@ -5,9 +5,6 @@
 <title>Play</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet"
-href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
-
 <style>
 body {
   margin: 0;
@@ -16,16 +13,24 @@ body {
   font-family: system-ui, sans-serif;
 }
 
-#board-area {
-  width: 100%;
-  max-width: 360px;
-  margin: 20px auto;
+#board {
+  width: 320px;
+  height: 320px;
+  margin: 30px auto;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  border: 2px solid #334155;
 }
 
-#board {
-  width: 100%;
-  min-height: 360px;
+.square {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
 }
+
+.dark { background: #475569; }
+.light { background: #cbd5e1; }
 
 #coach {
   position: fixed;
@@ -41,36 +46,29 @@ body {
 
 <body>
 
-<div id="board-area">
-  <div id="board"></div>
-</div>
-
+<div id="board"></div>
 <div id="coach">Coach: Your move.</div>
 
-<script src="https://unpkg.com/chess.js@1.0.0/chess.min.js"></script>
-<script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
-
 <script>
-window.addEventListener("load", () => {
-  const game = new Chess();
+const boardEl = document.getElementById("board");
 
-  const board = Chessboard("board", {
-    draggable: true,
-    position: "start",
-    pieceTheme:
-      "https://lichess1.org/assets/piece/staunton/{piece}.svg",
-    onDrop: function (source, target) {
-      const move = game.move({
-        from: source,
-        to: target,
-        promotion: "q"
-      });
-      if (move === null) return "snapback";
-      document.getElementById("coach").innerText =
-        "Coach: Played " + move.san;
-    }
-  });
-});
+const pieces = [
+  "♜","♞","♝","♛","♚","♝","♞","♜",
+  "♟","♟","♟","♟","♟","♟","♟","♟",
+  "","","","","","","","",
+  "","","","","","","","",
+  "","","","","","","","",
+  "","","","","","","","",
+  "♙","♙","♙","♙","♙","♙","♙","♙",
+  "♖","♘","♗","♕","♔","♗","♘","♖"
+];
+
+for (let i = 0; i < 64; i++) {
+  const square = document.createElement("div");
+  square.className = "square " + ((Math.floor(i/8) + i) % 2 ? "dark" : "light");
+  square.textContent = pieces[i];
+  boardEl.appendChild(square);
+}
 </script>
 
 </body>

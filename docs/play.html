@@ -3,132 +3,223 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Play vs Coach — Debug Loader</title>
-
+<title>Play vs Coach — Offline Fallback</title>
 <style>
-  body { margin:0; font-family:system-ui; background:#071226; color:#e6eef6; text-align:center; }
-  header{ padding:18px; font-size:22px; font-weight:700; }
-  #board { width:90vw; max-width:420px; margin:12px auto; border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.6); min-height:90vw; }
-  #status { max-width:920px; margin:12px auto; padding:12px; background:rgba(255,255,255,0.03); border-radius:10px; text-align:left; font-family:monospace; white-space:pre-wrap; }
-  .ok { color:#a7f3d0 }
-  .err { color:#ffb4b4 }
-  footer{height:40px}
+  :root{
+    --bg1:#0b1d33; --bg2:#07102a; --glass1:#e6eef6; --glass2:#c6d6e6;
+    --darksq:#3b4a5b; --lightsq:#dbe8f3;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:#e9f2ff;font-family:system-ui,Arial}
+  header{padding:18px;text-align:center;font-weight:700;font-size:20px}
+  #app{display:flex;gap:12px;height:calc(100vh - 64px);padding:6px;box-sizing:border-box;}
+  /* board column */
+  #left{flex:1;display:flex;flex-direction:column;align-items:center;}
+  /* blue-glass board container */
+  #boardWrap{background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); padding:12px;border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;}
+  #board{width:92vw;max-width:420px;aspect-ratio:1/1;display:grid;grid-template-columns:repeat(8,1fr);border-radius:10px;overflow:hidden}
+  .sq{display:flex;align-items:center;justify-content:center;font-size:calc(20px + 2vw);user-select:none;touch-action:manipulation}
+  .light{background:linear-gradient(180deg,var(--glass1),var(--glass2));color:#07102a}
+  .dark{background:linear-gradient(180deg,var(--darksq),#43566b);color:#eef6ff}
+  .selected{outline:4px solid rgba(124,175,63,0.55);box-shadow:0 6px 18px rgba(0,0,0,0.4)}
+  /* board controls */
+  .controls{margin-top:14px;display:flex;gap:12px;align-items:center}
+  .btn{padding:10px 14px;border-radius:12px;border:none;background:#1f2937;color:#eef6ff;font-weight:600;cursor:pointer}
+  .btn.primary{background:#7fbf3f;color:#05210a}
+  /* right panel - coach */
+  #coach{width:320px;background:rgba(2,6,23,0.6);border-left:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;padding:12px;box-sizing:border-box}
+  #coachHeader{display:flex;align-items:center;gap:12px;padding-bottom:8px}
+  #avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#fb7185);display:flex;align-items:center;justify-content:center;font-weight:700;color:#07102a}
+  #coachBody{flex:1;overflow:auto;padding-right:6px}
+  .coachLine{margin-bottom:10px;font-size:14px}
+  #coachFooter{display:flex;gap:8px;padding-top:8px}
+  .small{font-size:13px;color:#cbd5e1}
+  /* responsive - hide coach on small */
+  @media(max-width:900px){#coach{display:none}}
 </style>
 </head>
 <body>
-  <header>Play vs Coach — Loader debug</header>
 
-  <div id="board"></div>
+<header>Play vs Coach</header>
 
-  <div id="status">Starting loader...</div>
+<div id="app">
+  <div id="left">
+    <div id="boardWrap">
+      <div id="board" aria-label="Chessboard"></div>
+    </div>
 
-  <footer></footer>
+    <div class="controls">
+      <button class="btn" id="resetBtn">Reset</button>
+      <button class="btn primary" id="flipBtn">Flip Board</button>
+      <div style="flex:1"></div>
+      <div class="small" id="statusSmall">Coach: Ready</div>
+    </div>
+  </div>
+
+  <div id="coach" role="region" aria-label="Coach panel">
+    <div id="coachHeader">
+      <div id="avatar">☺</div>
+      <div>
+        <div style="font-weight:700" id="coachName">Coach</div>
+        <div class="small" id="coachSub">Friendly teacher</div>
+      </div>
+    </div>
+
+    <div id="coachBody"></div>
+
+    <div id="coachFooter">
+      <button class="btn" id="whyBtn">Why?</button>
+      <button class="btn" id="hideCoachBtn">Hide</button>
+    </div>
+  </div>
+</div>
 
 <script>
-/* Utility: append line to status */
-function logLine(text, cls) {
-  const st = document.getElementById('status');
-  const p = document.createElement('div');
-  p.textContent = text;
-  if (cls) p.className = cls;
-  st.appendChild(p);
-  st.scrollTop = st.scrollHeight;
-}
+/* -------------------------
+   Self-contained offline board
+   - No external libs
+   - Tap to move
+   - Unicode solid pieces
+   - Flip / reset
+   - Coach panel (right)
+   -------------------------*/
 
-/* Global error handler shows visible error */
-window.addEventListener('error', (e) => {
-  logLine('GLOBAL ERROR: ' + (e && e.message ? e.message : String(e)), 'err');
-});
+/* Unicode pieces mapping (solid style) */
+const GLYPHS = {
+  r:'♜', n:'♞', b:'♝', q:'♛', k:'♚', p:'♟',
+  R:'♖', N:'♘', B:'♗', Q:'♕', K:'♔', P:'♙'
+};
 
-/* Load a script by URL (promise) */
-function loadScript(url) {
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = url;
-    s.onload = () => resolve(url);
-    s.onerror = () => reject(url);
-    document.head.appendChild(s);
+/* Start position array (8x8, index 0=a8, 63=h1) */
+let state = [
+  'r','n','b','q','k','b','n','r',
+  'p','p','p','p','p','p','p','p',
+  '','','','','','','','',
+  '','','','','','','','',
+  '','','','','','','','',
+  '','','','','','','','',
+  'P','P','P','P','P','P','P','P',
+  'R','N','B','Q','K','B','N','R'
+];
+
+let flipped = false;
+let selected = null;
+
+/* DOM refs */
+const boardEl = document.getElementById('board');
+const coachBody = document.getElementById('coachBody');
+const statusSmall = document.getElementById('statusSmall');
+
+/* Draw board responsive */
+function drawBoard(){
+  boardEl.innerHTML = '';
+  const order = flipped ? [...Array(64).keys()].reverse() : [...Array(64).keys()];
+  order.forEach(idx=>{
+    const cell = document.createElement('div');
+    const row = Math.floor(idx/8);
+    const col = idx%8;
+    const dark = (row + col) % 2 === 1;
+    cell.className = 'sq ' + (dark ? 'dark' : 'light');
+    cell.dataset.idx = idx;
+    const val = state[idx];
+    cell.textContent = val ? GLYPHS[val] : '';
+    cell.addEventListener('click', onSquareClick);
+    if(selected === idx) cell.classList.add('selected');
+    boardEl.appendChild(cell);
   });
 }
 
-/* Try multiple candidate URLs in sequence until one loads */
-async function tryCandidates(name, candidates) {
-  for (const url of candidates) {
-    try {
-      logLine(`Trying ${name} from: ${url}`);
-      await loadScript(url);
-      logLine(`Loaded ${name} from: ${url}`, 'ok');
-      return url;
-    } catch (errUrl) {
-      logLine(`Failed to load ${name} from: ${errUrl}`, 'err');
-    }
-  }
-  throw new Error(`${name} failed to load from all candidates.`);
+/* utility */
+function idxToAlg(i){
+  const file = String.fromCharCode(97 + (i % 8));
+  const rank = 8 - Math.floor(i/8);
+  return file + rank;
 }
 
-async function boot() {
-  try {
-    // Candidate lists (multiple CDNs)
-    const jqueryCandidates = [
-      'https://code.jquery.com/jquery-3.6.0.min.js',
-      'https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js'
-    ];
-    const chessJsCandidates = [
-      'https://unpkg.com/chess.js@1.0.0/chess.min.js',
-      'https://cdn.jsdelivr.net/npm/chess.js@1.0.0/chess.min.js',
-      'https://cdn.jsdelivr.net/npm/chess.js@0.13.4/chess.min.js'
-    ];
-    const chessboardCandidates = [
-      'https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js',
-      'https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js',
-      'https://cdn.jsdelivr.net/gh/oakmac/chessboardjs@master/dist/chessboard-1.0.0.min.js'
-    ];
-
-    // Load jQuery first
-    await tryCandidates('jQuery', jqueryCandidates);
-
-    // Load chess.js
-    await tryCandidates('chess.js', chessJsCandidates);
-
-    // Load chessboard.js
-    await tryCandidates('chessboardjs', chessboardCandidates);
-
-    // Small delay to allow bindings
-    await new Promise(r=>setTimeout(r,200));
-
-    // Verify loaded objects
-    if (typeof window.Chess !== 'function' && typeof window.Chess !== 'object') {
-      throw new Error('chess.js did not expose Chess constructor.');
-    }
-    if (typeof window.Chessboard === 'undefined') {
-      throw new Error('chessboardjs did not expose Chessboard.');
-    }
-
-    logLine('All libraries loaded — initializing board...', 'ok');
-
-    // Initialize chessboardjs
-    const game = new Chess();
-    const cb = Chessboard('board', {
-      draggable: true,
-      position: 'start',
-      pieceTheme: 'https://unpkg.com/chessboardjs@1.0.0/dist/img/chesspieces/wikipedia/{piece}.png',
-      onDrop: function (source, target) {
-        const m = game.move({ from: source, to: target, promotion: 'q' });
-        if (m === null) return 'snapback';
-        logLine('Move: ' + m.san, 'ok');
-      }
-    });
-
-    logLine('Board initialized successfully. If you do not see the board, refresh the page.', 'ok');
-
-  } catch (err) {
-    logLine('BOOT ERROR: ' + (err && err.message ? err.message : String(err)), 'err');
-    logLine('If a candidate failed to load, try opening that URL directly in your phone browser to see error text/404.', 'err');
-  }
+/* coach messages */
+function coachSay(txt){
+  const d = document.createElement('div');
+  d.className = 'coachLine';
+  d.innerHTML = '<strong>Coach:</strong> ' + txt;
+  coachBody.appendChild(d);
+  coachBody.scrollTop = coachBody.scrollHeight;
+  statusSmall.textContent = 'Coach: ' + txt;
 }
 
-/* Start boot */
-boot();
+/* click handler (tap to move) */
+function onSquareClick(e){
+  const i = Number(e.currentTarget.dataset.idx);
+  if(selected === null){
+    if(!state[i]) { coachSay('Tap a piece first.'); return; }
+    selected = i;
+    drawBoard();
+    coachSay('Selected ' + idxToAlg(i));
+    return;
+  }
+  if(selected === i){
+    selected = null;
+    drawBoard();
+    coachSay('Selection cleared.');
+    return;
+  }
+  // move (no legality check in offline fallback)
+  state[i] = state[selected];
+  state[selected] = '';
+  const movedTo = idxToAlg(i);
+  const movedFrom = idxToAlg(selected);
+  coachSay(`${playerName || 'Player'} moved ${movedFrom} → ${movedTo}.`);
+  selected = null;
+  drawBoard();
+}
+
+/* flip and reset */
+document.getElementById('flipBtn').addEventListener('click', ()=>{
+  flipped = !flipped;
+  drawBoard();
+});
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  state = [
+    'r','n','b','q','k','b','n','r',
+    'p','p','p','p','p','p','p','p',
+    '','','','','','','','',
+    '','','','','','','','',
+    '','','','','','','','',
+    '','','','','','','','',
+    'P','P','P','P','P','P','P','P',
+    'R','N','B','Q','K','B','N','R'
+  ];
+  flipped = false;
+  selected = null;
+  coachBody.innerHTML = '';
+  coachSay('Board reset.');
+  drawBoard();
+});
+
+/* why button */
+document.getElementById('whyBtn').addEventListener('click', ()=>{
+  coachSay('Because each move should serve a plan — ask what your pieces aim to do.');
+});
+
+/* hide coach */
+document.getElementById('hideCoachBtn').addEventListener('click', ()=>{
+  const panel = document.getElementById('coach');
+  panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+});
+
+/* name memory */
+let playerName = localStorage.getItem('playerName') || null;
+if(!playerName){
+  playerName = prompt('What should I call you? (first name)');
+  if(!playerName) playerName = 'Friend';
+  localStorage.setItem('playerName', playerName);
+}
+coachSay(`Hello ${playerName}. We'll learn from books and practice.`);
+
+/* small difficulty slider & timer are omitted in fallback to keep UI simple,
+   we simulate difficulty later when we have engine access. */
+
+/* initial draw */
+drawBoard();
 </script>
 </body>
   </html>

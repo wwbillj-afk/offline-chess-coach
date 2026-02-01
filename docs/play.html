@@ -3,42 +3,93 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Play vs Coach — Reliable Fallback</title>
+<title>Play vs Coach — Polished</title>
 <style>
-  :root{
-    --bg-top:#0b1d33; --bg-bottom:#07102a;
-    --light:#dceefc; --dark:#274252;
-    --accent:#6bb12b;
-  }
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg-top),var(--bg-bottom));font-family:system-ui,Arial;color:#eef6ff}
-  header{padding:16px;text-align:center;font-weight:700;font-size:20px}
-  #app{display:flex;gap:12px;height:calc(100vh - 56px);padding:8px;box-sizing:border-box}
-  #left{flex:1;display:flex;flex-direction:column;align-items:center}
-  /* simple board container */
-  #boardWrap{background:rgba(255,255,255,0.02);padding:12px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,0.6)}
-  /* grid board: square by vw with min size */
-  #board {
-    width:92vw; max-width:460px; min-width:300px;
-    display:grid; grid-template-columns:repeat(8,1fr);
-    aspect-ratio:1/1; border-radius:10px; overflow:hidden;
-  }
-  .sq { display:flex; align-items:center; justify-content:center; user-select:none; touch-action:manipulation; font-size:calc(18px + 2.6vw); }
-  .light { background: linear-gradient(180deg,var(--light),#cce7f5); color:#07101a; }
-  .dark { background: linear-gradient(180deg,var(--dark),#35556b); color:#f7fbff; }
-  .selected { outline:4px solid rgba(107,177,43,0.5); box-shadow:0 8px 18px rgba(0,0,0,0.4); }
-  /* controls */
-  .controls{display:flex;gap:12px;align-items:center;margin-top:12px;width:100%;max-width:680px}
-  .btn{padding:10px 14px;border-radius:12px;border:none;background:#1f2937;color:#eef6ff;cursor:pointer}
-  .btn.primary{background:var(--accent);color:#05220b;font-weight:700}
-  #statusSmall{font-weight:600;color:#dbe8f3}
-  /* coach */
-  #coach{width:320px;background:rgba(2,6,23,0.6);border-left:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;padding:12px;box-sizing:border-box}
-  #coachHeader{display:flex;gap:12px;align-items:center;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
-  #avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#fb7185);display:flex;align-items:center;justify-content:center;color:#07102a;font-weight:700}
-  #coachBody{flex:1;overflow:auto;padding-top:8px}
-  .coachLine{margin-bottom:10px;font-size:14px}
-  #coachFooter{display:flex;gap:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.03)}
-  @media(max-width:900px){#coach{display:none}}
+:root{
+  --bg-top:#081827; --bg-bottom:#041021;
+  --glass1:rgba(255,255,255,0.06);
+  --glass2:rgba(255,255,255,0.02);
+  --sq-light:#e7f6fc;
+  --sq-dark:#2f4655;
+  --accent:#6fc23b;
+  --muted:#9fb1c7;
+}
+html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg-top),var(--bg-bottom));font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#eaf6ff}
+header{padding:16px;text-align:center;font-weight:800;font-size:20px;letter-spacing:0.2px}
+#app{display:flex;gap:12px;height:calc(100vh - 56px);padding:10px;box-sizing:border-box}
+#left{flex:1;display:flex;flex-direction:column;align-items:center}
+/* framed board */
+#boardWrap{
+  width:94vw; max-width:520px;
+  background:linear-gradient(180deg,var(--glass1),var(--glass2));
+  padding:14px;border-radius:20px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.65), inset 0 2px 0 rgba(255,255,255,0.02);
+  display:flex;align-items:center;justify-content:center;
+}
+#board{
+  width:92vw; max-width:480px; aspect-ratio:1/1;
+  display:grid;grid-template-columns:repeat(8,1fr);
+  border-radius:14px; overflow:hidden; position:relative;
+  border: 6px solid rgba(0,0,0,0.08);
+}
+
+/* squares */
+.square{display:flex;align-items:center;justify-content:center;user-select:none;touch-action:manipulation;position:relative}
+.light{background: linear-gradient(180deg,var(--sq-light),#cfeaf7)}
+.dark{background: linear-gradient(180deg,var(--sq-dark),#2b4958)}
+/* piece styling: larger and layered shadows for depth */
+.piece{
+  font-size: calc(22px + 2.6vw);
+  line-height:0.95;
+  transform-origin:center;
+  transition: transform 210ms ease, opacity 180ms ease;
+  text-shadow:
+    0 8px 14px rgba(0,0,0,0.55),
+    0 2px 0 rgba(255,255,255,0.06);
+  -webkit-font-smoothing:antialiased;
+}
+.white-piece{color:#ffffff;}
+.black-piece{color:#071218; text-shadow:0 2px 0 rgba(255,255,255,0.06), 0 8px 12px rgba(0,0,0,0.45);}
+
+/* selection & last-move */
+.selected{outline:5px solid rgba(111,193,59,0.38); box-shadow:0 10px 30px rgba(111,193,59,0.05)}
+.last-move-from::after, .last-move-to::after{
+  content:""; position:absolute; inset:0; border-radius:inherit;
+  box-shadow: inset 0 0 0 3px rgba(255,255,255,0.03);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(111,193,59,0.06));
+  mix-blend-mode: overlay;
+  opacity:0.9;
+}
+/* pulse on move */
+.pulse {
+  animation: pulseMove 520ms ease;
+}
+@keyframes pulseMove {
+  0%{ transform: scale(0.88); opacity:0.6}
+  60%{ transform: scale(1.06); opacity:1 }
+  100%{ transform: scale(1); opacity:1 }
+}
+
+/* controls */
+.controls{display:flex;gap:12px;align-items:center;margin-top:14px;width:100%;max-width:760px}
+.btn{padding:10px 14px;border-radius:12px;border:none;background:#15202b;color:#eaf6ff;cursor:pointer;box-shadow: 0 6px 14px rgba(0,0,0,0.45)}
+.btn.primary{background:var(--accent);color:#06220a;font-weight:800}
+.statusSmall{font-weight:700;color:var(--muted)}
+
+/* coach panel */
+#coach{
+  width:360px;background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-left:1px solid rgba(255,255,255,0.03);
+  display:flex;flex-direction:column;padding:12px;border-radius:8px;
+}
+#coachHeader{display:flex;gap:12px;align-items:center;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
+#avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#fb7185);display:flex;align-items:center;justify-content:center;color:#07102a;font-weight:700}
+#coachBody{flex:1;overflow:auto;padding-top:8px}
+.coachLine{margin-bottom:10px;font-size:15px;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);padding:8px;border-radius:8px}
+#coachFooter{display:flex;gap:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.03)}
+
+/* small screen - hide coach */
+@media (max-width:900px){#coach{display:none}}
 </style>
 </head>
 <body>
@@ -55,7 +106,7 @@
       <button class="btn" id="resetBtn">Reset</button>
       <button class="btn primary" id="flipBtn">Flip Board</button>
       <div style="flex:1"></div>
-      <div id="statusSmall">Coach: Ready</div>
+      <div class="statusSmall" id="statusSmall">Coach: Ready</div>
     </div>
   </div>
 
@@ -63,8 +114,8 @@
     <div id="coachHeader">
       <div id="avatar">♛</div>
       <div>
-        <div style="font-weight:700" id="coachName">Coach</div>
-        <div style="font-size:13px;color:#cbd5e1">Friendly teacher</div>
+        <div style="font-weight:800" id="coachName">Coach</div>
+        <div style="font-size:13px;color:#a9c3d6">Gentle & clear</div>
       </div>
     </div>
 
@@ -72,21 +123,26 @@
 
     <div id="coachFooter">
       <button class="btn" id="whyBtn">Why?</button>
-      <button class="btn" id="hideCoachBtn">Hide</button>
+      <button class="btn" id="toggleCoachBtn">Collapse</button>
     </div>
   </div>
 </div>
 
 <script>
-/* Guaranteed simple board using Unicode pieces (no external resources) */
+/* Polished fallback board (Unicode pieces) with:
+   - last-move highlight
+   - selection highlight & animation
+   - improved piece depth and shadowing
+   - coach UI with persistence
+*/
 
-/* Unicode pieces map */
+/* Unicode pieces */
 const PIECES = {
   r:'♜', n:'♞', b:'♝', q:'♛', k:'♚', p:'♟',
   R:'♖', N:'♘', B:'♗', Q:'♕', K:'♔', P:'♙'
 };
 
-/* starting position array (0=a8 ... 63=h1) */
+/* starting pos (0=a8 .. 63=h1) */
 let pos = [
   'r','n','b','q','k','b','n','r',
   'p','p','p','p','p','p','p','p',
@@ -100,38 +156,44 @@ let pos = [
 
 let flipped = false;
 let selected = null;
+let lastMove = { from: null, to: null };
 
-/* DOM refs */
 const boardEl = document.getElementById('board');
 const coachBody = document.getElementById('coachBody');
 const statusSmall = document.getElementById('statusSmall');
+const toggleCoachBtn = document.getElementById('toggleCoachBtn');
 
-/* coach */
-function coachSay(text){
+function coachSay(txt){
   const d = document.createElement('div');
   d.className = 'coachLine';
-  d.innerHTML = `<strong>Coach:</strong> ${text}`;
+  d.innerHTML = `<strong>Coach:</strong> ${txt}`;
   coachBody.appendChild(d);
   coachBody.scrollTop = coachBody.scrollHeight;
-  statusSmall.textContent = 'Coach: ' + text;
+  document.getElementById('statusSmall').textContent = 'Coach: ' + txt;
 }
 
-/* draw board */
+/* draw board with highlights */
 function drawBoard(){
   boardEl.innerHTML = '';
-  const indices = [...Array(64).keys()];
-  if(flipped) indices.reverse();
-  for(const idx of indices){
+  const idxs = [...Array(64).keys()];
+  if(flipped) idxs.reverse();
+  for(const idx of idxs){
     const r = Math.floor(idx/8), c = idx%8;
     const div = document.createElement('div');
-    div.className = 'square ' + (((r+c)%2) ? 'dark' : 'light');
+    div.className = 'square ' + (((r+c)%2)?'dark':'light');
     div.dataset.idx = idx;
+    // apply last-move highlight classes
+    if(lastMove.from === idx) div.classList.add('last-move-from');
+    if(lastMove.to === idx) div.classList.add('last-move-to');
+    // piece
     const piece = pos[idx];
     if(piece){
       const span = document.createElement('div');
+      span.className = 'piece ' + (piece === piece.toUpperCase() ? 'white-piece' : 'black-piece');
       span.textContent = PIECES[piece] || '?';
-      span.style.fontSize = 'calc(18px + 2.6vw)';
-      span.style.filter = 'drop-shadow(0 6px 10px rgba(0,0,0,0.35))';
+      // small transform on load for a subtle entry
+      span.style.transform = 'scale(0.98)';
+      setTimeout(()=>span.style.transform='scale(1)', 40);
       div.appendChild(span);
     }
     if(selected === idx) div.classList.add('selected');
@@ -140,39 +202,68 @@ function drawBoard(){
   }
 }
 
-/* click handling */
+/* click handler */
 function onSquareClick(idx){
   if(selected === null){
     if(!pos[idx]){ coachSay('Tap a piece first.'); return; }
     selected = idx; drawBoard(); coachSay('Selected ' + idxToAlg(idx)); return;
   }
-  if(selected === idx){ selected = null; drawBoard(); coachSay('Selection cleared.'); return; }
-  pos[idx] = pos[selected]; pos[selected] = ''; selected = null; drawBoard(); coachSay(`${playerName} moved to ${idxToAlg(idx)}.`);
+  if(selected === idx){ selected=null; drawBoard(); coachSay('Selection cleared.'); return; }
+  // execute move in pos model
+  lastMove.from = selected;
+  lastMove.to = idx;
+  pos[idx] = pos[selected];
+  pos[selected] = '';
+  // animate target briefly
+  animateTarget(idx);
+  selected = null;
+  drawBoard();
+  coachSay(`${playerName} moved ${idxToAlg(lastMove.from)} → ${idxToAlg(lastMove.to)}.`);
 }
 
-/* helper */
+function animateTarget(idx){
+  const el = [...boardEl.children].find(ch => Number(ch.dataset.idx) === idx);
+  if(!el) return;
+  el.classList.add('pulse');
+  setTimeout(()=>el.classList.remove('pulse'), 520);
+}
+
 function idxToAlg(i){ return String.fromCharCode(97 + (i%8)) + (8 - Math.floor(i/8)); }
 
 /* controls */
-document.getElementById('flipBtn').addEventListener('click', ()=>{ flipped = !flipped; drawBoard(); });
-document.getElementById('resetBtn').addEventListener('click', ()=>{ pos = [
-  'r','n','b','q','k','b','n','r',
-  'p','p','p','p','p','p','p','p',
-  '','','','','','','','',
-  '','','','','','','','',
-  '','','','','','','','',
-  '','','','','','','','',
-  'P','P','P','P','P','P','P','P',
-  'R','N','B','Q','K','B','N','R'
-]; selected = null; flipped = false; coachBody.innerHTML=''; coachSay('Board reset.'); drawBoard(); });
+document.getElementById('flipBtn').addEventListener('click', ()=>{ flipped=!flipped; drawBoard(); });
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  pos = [
+    'r','n','b','q','k','b','n','r',
+    'p','p','p','p','p','p','p','p',
+    '','','','','','','','',
+    '','','','','','','','',
+    '','','','','','','','',
+    '','','','','','','','',
+    'P','P','P','P','P','P','P','P',
+    'R','N','B','Q','K','B','N','R'
+  ]; selected=null; lastMove={from:null,to:null}; coachBody.innerHTML=''; coachSay('Board reset.'); drawBoard();
+});
+document.getElementById('whyBtn').addEventListener('click', ()=>coachSay('Because plans beat memorized moves. Ask what each piece achieves.'));
+document.getElementById('toggleCoachBtn').addEventListener('click', ()=>{
+  const panel = document.getElementById('coach');
+  const collapsed = panel.style.display === 'none';
+  panel.style.display = collapsed ? 'flex' : 'none';
+  localStorage.setItem('coachCollapsed', collapsed ? '0' : '1');
+});
 
-document.getElementById('whyBtn').addEventListener('click', ()=>coachSay('Because chess is about ideas — think what your pieces control.'));
-document.getElementById('hideCoachBtn').addEventListener('click', ()=>{ const p=document.getElementById('coach'); p.style.display = p.style.display==='none' ? 'flex' : 'none'; });
-
-/* name memory */
+/* load name */
 let playerName = localStorage.getItem('playerName') || null;
-if(!playerName){ playerName = prompt('What shall I call you?'); if(!playerName) playerName = 'Friend'; localStorage.setItem('playerName', playerName); }
+if(!playerName){
+  playerName = prompt('What shall I call you?') || 'Friend';
+  localStorage.setItem('playerName',playerName);
+}
 coachSay(`Hello ${playerName}. We learn from books and practice deliberately.`);
+
+/* restore coach collapsed */
+const saved = localStorage.getItem('coachCollapsed');
+if(saved === '1'){ document.getElementById('coach').style.display = 'none'; toggleCoachBtn.textContent = 'Expand' }
+else toggleCoachBtn.textContent = 'Collapse';
 
 /* initial draw */
 drawBoard();

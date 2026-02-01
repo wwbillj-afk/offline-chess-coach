@@ -3,39 +3,42 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Play vs Coach — Premium</title>
+<title>Play vs Coach — Reliable Fallback</title>
 <style>
-:root{
-  --bg-top:#0b1d33; --bg-bottom:#07102a;
-  --glass-light:#eaf4fb; --glass-dark:#556b7b;
-  --accent:#7fbf3f;
-}
-html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg-top),var(--bg-bottom));font-family:system-ui,Arial;color:#eef6ff}
-header{padding:16px;text-align:center;font-weight:700;font-size:20px}
-#app{display:flex;gap:12px;height:calc(100vh - 56px);padding:8px;box-sizing:border-box}
-#left{flex:1;display:flex;flex-direction:column;align-items:center}
-#boardWrap{background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); padding:14px;border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.6)}
-#board{width:92vw;max-width:480px;aspect-ratio:1/1;display:grid;grid-template-columns:repeat(8,1fr);border-radius:12px;overflow:hidden;position:relative}
-.square{display:flex;align-items:center;justify-content:center;touch-action:manipulation;user-select:none}
-.light{background:linear-gradient(180deg,var(--glass-light),#cfe3ee)}
-.dark{background:linear-gradient(180deg,var(--glass-dark),#32505f)}
-.selected{outline:4px solid rgba(124,175,63,0.45);box-shadow:0 8px 14px rgba(0,0,0,0.4)}
-.piece-svg{width:74%;height:auto;display:block;pointer-events:none}
-.piece-shadow{filter:drop-shadow(0 8px 10px rgba(0,0,0,0.45))}
-.controls{display:flex;gap:12px;align-items:center;margin-top:14px;width:100%;max-width:680px}
-.btn{padding:10px 14px;border-radius:12px;border:none;background:#1f2937;color:#eef6ff;cursor:pointer}
-.btn.primary{background:var(--accent);color:#05220b;font-weight:700}
-#coach{width:360px;background:rgba(2,6,23,0.6);border-left:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;padding:12px;box-sizing:border-box}
-#coachHeader{display:flex;gap:12px;align-items:center;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
-#avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#fb7185);display:flex;align-items:center;justify-content:center;color:#07102a;font-weight:700}
-#coachBody{flex:1;overflow:auto;padding-top:8px}
-.coachLine{margin-bottom:10px;font-size:14px}
-#coachFooter{display:flex;gap:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.03)}
-@media(max-width:900px){#coach{display:none}}
-/* small-screen tweaks to ensure pieces scale nicely */
-@media(max-width:420px){
-  .piece-svg{width:82%}
-}
+  :root{
+    --bg-top:#0b1d33; --bg-bottom:#07102a;
+    --light:#dceefc; --dark:#274252;
+    --accent:#6bb12b;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg-top),var(--bg-bottom));font-family:system-ui,Arial;color:#eef6ff}
+  header{padding:16px;text-align:center;font-weight:700;font-size:20px}
+  #app{display:flex;gap:12px;height:calc(100vh - 56px);padding:8px;box-sizing:border-box}
+  #left{flex:1;display:flex;flex-direction:column;align-items:center}
+  /* simple board container */
+  #boardWrap{background:rgba(255,255,255,0.02);padding:12px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,0.6)}
+  /* grid board: square by vw with min size */
+  #board {
+    width:92vw; max-width:460px; min-width:300px;
+    display:grid; grid-template-columns:repeat(8,1fr);
+    aspect-ratio:1/1; border-radius:10px; overflow:hidden;
+  }
+  .sq { display:flex; align-items:center; justify-content:center; user-select:none; touch-action:manipulation; font-size:calc(18px + 2.6vw); }
+  .light { background: linear-gradient(180deg,var(--light),#cce7f5); color:#07101a; }
+  .dark { background: linear-gradient(180deg,var(--dark),#35556b); color:#f7fbff; }
+  .selected { outline:4px solid rgba(107,177,43,0.5); box-shadow:0 8px 18px rgba(0,0,0,0.4); }
+  /* controls */
+  .controls{display:flex;gap:12px;align-items:center;margin-top:12px;width:100%;max-width:680px}
+  .btn{padding:10px 14px;border-radius:12px;border:none;background:#1f2937;color:#eef6ff;cursor:pointer}
+  .btn.primary{background:var(--accent);color:#05220b;font-weight:700}
+  #statusSmall{font-weight:600;color:#dbe8f3}
+  /* coach */
+  #coach{width:320px;background:rgba(2,6,23,0.6);border-left:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;padding:12px;box-sizing:border-box}
+  #coachHeader{display:flex;gap:12px;align-items:center;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
+  #avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#fb7185);display:flex;align-items:center;justify-content:center;color:#07102a;font-weight:700}
+  #coachBody{flex:1;overflow:auto;padding-top:8px}
+  .coachLine{margin-bottom:10px;font-size:14px}
+  #coachFooter{display:flex;gap:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.03)}
+  @media(max-width:900px){#coach{display:none}}
 </style>
 </head>
 <body>
@@ -52,7 +55,7 @@ header{padding:16px;text-align:center;font-weight:700;font-size:20px}
       <button class="btn" id="resetBtn">Reset</button>
       <button class="btn primary" id="flipBtn">Flip Board</button>
       <div style="flex:1"></div>
-      <div id="statusSmall" style="font-weight:600;color:#dbe8f3">Coach: Ready</div>
+      <div id="statusSmall">Coach: Ready</div>
     </div>
   </div>
 
@@ -75,15 +78,15 @@ header{padding:16px;text-align:center;font-weight:700;font-size:20px}
 </div>
 
 <script>
-/* -------------------
-  Final self-contained play.html
-  - Premium SVG pieces styled and sized to avoid mobile distortion
-  - Tap-to-move
-  - Flip/Reset
-  - Right-side coach
---------------------*/
+/* Guaranteed simple board using Unicode pieces (no external resources) */
 
-/* Starting position */
+/* Unicode pieces map */
+const PIECES = {
+  r:'♜', n:'♞', b:'♝', q:'♛', k:'♚', p:'♟',
+  R:'♖', N:'♘', B:'♗', Q:'♕', K:'♔', P:'♙'
+};
+
+/* starting position array (0=a8 ... 63=h1) */
 let pos = [
   'r','n','b','q','k','b','n','r',
   'p','p','p','p','p','p','p','p',
@@ -94,153 +97,84 @@ let pos = [
   'P','P','P','P','P','P','P','P',
   'R','N','B','Q','K','B','N','R'
 ];
-let flipped = false, selected = null;
 
-/* helper: algebraic */
-function idxToAlg(i){ return String.fromCharCode(97 + (i%8)) + (8 - Math.floor(i/8)); }
-function isUpper(c){ return c && c === c.toUpperCase(); }
+let flipped = false;
+let selected = null;
 
-/* coach UI */
+/* DOM refs */
+const boardEl = document.getElementById('board');
 const coachBody = document.getElementById('coachBody');
 const statusSmall = document.getElementById('statusSmall');
-function coachSay(txt){ const d=document.createElement('div'); d.className='coachLine'; d.innerHTML='<strong>Coach:</strong> '+txt; coachBody.appendChild(d); coachBody.scrollTop=coachBody.scrollHeight; statusSmall.textContent='Coach: '+txt; }
 
-/* piece SVG factories (clean, compact, filled shapes) */
-/* Each factory returns an SVG element with preserveAspectRatio to avoid distortion */
-function svg(tag,attrs){ const ns='http://www.w3.org/2000/svg'; const e=document.createElementNS(ns,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); return e; }
-
-function makePawn(col){
-  const s=svg('svg',{viewBox:'0 0 120 120',class:'piece-svg',preserveAspectRatio:'xMidYMid meet'});
-  const fill = col==='w'?'#ffffff':'#0b1220';
-  const stroke = col==='w'?'#1f2937':'#dbe8f3';
-  s.appendChild(svg('ellipse',{cx:60,cy:96,rx:30,ry:8,fill:'rgba(0,0,0,0.22)'}));
-  s.appendChild(svg('rect',{x:34,y:78,width:52,height:10,rx:6,fill:fill,stroke:stroke,'stroke-width':2}));
-  s.appendChild(svg('circle',{cx:60,cy:46,r:20,fill:fill,stroke:stroke,'stroke-width':3}));
-  s.appendChild(svg('rect',{x:48,y:62,width:24,height:16,rx:6,fill:fill,stroke:stroke,'stroke-width':2}));
-  return s;
+/* coach */
+function coachSay(text){
+  const d = document.createElement('div');
+  d.className = 'coachLine';
+  d.innerHTML = `<strong>Coach:</strong> ${text}`;
+  coachBody.appendChild(d);
+  coachBody.scrollTop = coachBody.scrollHeight;
+  statusSmall.textContent = 'Coach: ' + text;
 }
 
-function makeRook(col){
-  const s=svg('svg',{viewBox:'0 0 120 120',class:'piece-svg',preserveAspectRatio:'xMidYMid meet'});
-  const fill = col==='w'?'#ffffff':'#0b1220';
-  const stroke = col==='w'?'#1f2937':'#dbe8f3';
-  s.appendChild(svg('ellipse',{cx:60,cy:96,rx:30,ry:8,fill:'rgba(0,0,0,0.22)'}));
-  s.appendChild(svg('rect',{x:30,y:36,width:60,height:44,rx:6,fill:fill,stroke:stroke,'stroke-width':3}));
-  s.appendChild(svg('rect',{x:24,y:24,width:12,height:12,fill:fill,stroke:stroke,'stroke-width':3}));
-  s.appendChild(svg('rect',{x:48,y:24,width:12,height:12,fill:fill,stroke:stroke,'stroke-width':3}));
-  s.appendChild(svg('rect',{x:72,y:24,width:12,height:12,fill:fill,stroke:stroke,'stroke-width':3}));
-  s.appendChild(svg('rect',{x:22,y:84,width:76,height:8,rx:6,fill:fill,stroke:stroke,'stroke-width':3}));
-  return s;
-}
-
-function makeKnight(col){
-  const s=svg('svg',{viewBox:'0 0 120 120',class:'piece-svg',preserveAspectRatio:'xMidYMid meet'});
-  const fill = col==='w'?'#ffffff':'#0b1220';
-  const stroke = col==='w'?'#1f2937':'#dbe8f3';
-  s.appendChild(svg('ellipse',{cx:60,cy:98,rx:30,ry:8,fill:'rgba(0,0,0,0.22)'}));
-  s.appendChild(svg('path',{d:'M30 80 C48 58,68 54,80 44 C86 40,92 36,96 36 C88 28,76 22,64 28 C54 33,48 42,42 48 C34 56,30 66,30 80 Z',fill:fill,stroke:stroke,'stroke-width':3}));
-  return s;
-}
-
-function makeBishop(col){
-  const s=svg('svg',{viewBox:'0 0 120 120',class:'piece-svg',preserveAspectRatio:'xMidYMid meet'});
-  const fill = col==='w'?'#ffffff':'#0b1220';
-  const stroke = col==='w'?'#1f2937':'#dbe8f3';
-  s.appendChild(svg('ellipse',{cx:60,cy:96,rx:30,ry:8,fill:'rgba(0,0,0,0.22)'}));
-  s.appendChild(svg('path',{d:'M60 24 C76 34,86 46,86 56 C72 64,60 72,60 92 C48 72,36 64,24 56 C24 46,36 34,60 24 Z',fill:fill,stroke:stroke,'stroke-width':3}));
-  s.appendChild(svg('line',{x1:50,y1:36,x2:70,y2:56,stroke:stroke,'stroke-width':3}));
-  return s;
-}
-
-function makeQueen(col){
-  const s=svg('svg',{viewBox:'0 0 120 120',class:'piece-svg',preserveAspectRatio:'xMidYMid meet'});
-  const fill = col==='w'?'#ffffff':'#0b1220';
-  const stroke = col==='w'?'#1f2937':'#dbe8f3';
-  s.appendChild(svg('ellipse',{cx:60,cy:96,rx:30,ry:8,fill:'rgba(0,0,0,0.22)'}));
-  s.appendChild(svg('path',{d:'M22 46 L36 64 L50 44 L64 64 L78 44 L96 66 L96 46 L22 46 Z',fill:fill,stroke:stroke,'stroke-width':3}));
-  s.appendChild(svg('rect',{x:32,y:74,width:56,height:10,rx:5,fill:fill,stroke:stroke,'stroke-width':3}));
-  return s;
-}
-
-function makeKing(col){
-  const s=svg('svg',{viewBox:'0 0 120 120',class:'piece-svg',preserveAspectRatio:'xMidYMid meet'});
-  const fill = col==='w'?'#ffffff':'#0b1220';
-  const stroke = col==='w'?'#1f2937':'#dbe8f3';
-  s.appendChild(svg('ellipse',{cx:60,cy:96,rx:30,ry:8,fill:'rgba(0,0,0,0.22)'}));
-  s.appendChild(svg('path',{d:'M22 46 L36 64 L50 44 L64 64 L78 44 L96 66 L96 46 L22 46 Z',fill:fill,stroke:stroke,'stroke-width':3}));
-  s.appendChild(svg('rect',{x:56,y:18,width:8,height:20,fill:fill,stroke:stroke,'stroke-width':3}));
-  s.appendChild(svg('rect',{x:48,y:26,width:24,height:8,fill:fill,stroke:stroke,'stroke-width':3}));
-  s.appendChild(svg('rect',{x:26,y:84,width:68,height:10,rx:5,fill:fill,stroke:stroke,'stroke-width':3}));
-  return s;
-}
-
-/* map piece letter to factories */
-const factory = { p:makePawn, r:makeRook, n:makeKnight, b:makeBishop, q:makeQueen, k:makeKing };
-
-/* build board */
+/* draw board */
 function drawBoard(){
   boardEl.innerHTML = '';
   const indices = [...Array(64).keys()];
-  if (flipped) indices.reverse();
+  if(flipped) indices.reverse();
   for(const idx of indices){
-    const r=Math.floor(idx/8), c=idx%8;
-    const sq=document.createElement('div');
-    sq.className = 'square ' + (((r+c)%2)?'dark':'light');
-    sq.dataset.idx = idx;
-    const p = pos[idx];
-    if (p){
-      const col = isUpper(p) ? 'w' : 'b';
-      const key = p.toLowerCase();
-      if (factory[key]) {
-        const svgPiece = factory[key](col);
-        svgPiece.classList.add('piece-shadow');
-        sq.appendChild(svgPiece);
-      } else {
-        const sp = document.createElement('div');
-        sp.textContent = p;
-        sq.appendChild(sp);
-      }
+    const r = Math.floor(idx/8), c = idx%8;
+    const div = document.createElement('div');
+    div.className = 'square ' + (((r+c)%2) ? 'dark' : 'light');
+    div.dataset.idx = idx;
+    const piece = pos[idx];
+    if(piece){
+      const span = document.createElement('div');
+      span.textContent = PIECES[piece] || '?';
+      span.style.fontSize = 'calc(18px + 2.6vw)';
+      span.style.filter = 'drop-shadow(0 6px 10px rgba(0,0,0,0.35))';
+      div.appendChild(span);
     }
-    if (selected===idx) sq.classList.add('selected');
-    sq.addEventListener('click', ()=>onSquareClick(Number(sq.dataset.idx)));
-    boardEl.appendChild(sq);
+    if(selected === idx) div.classList.add('selected');
+    div.addEventListener('click', ()=>onSquareClick(Number(div.dataset.idx)));
+    boardEl.appendChild(div);
   }
 }
 
-/* click handler */
+/* click handling */
 function onSquareClick(idx){
-  if (selected===null){ if(!pos[idx]){ coachSay('Tap a piece first.'); return; } selected=idx; drawBoard(); coachSay('Selected '+idxToAlg(idx)); return; }
-  if (selected===idx){ selected=null; drawBoard(); coachSay('Selection cleared.'); return; }
-  pos[idx] = pos[selected]; pos[selected]=''; selected=null; drawBoard(); coachSay(`${playerName} moved to ${idxToAlg(idx)}.`)
+  if(selected === null){
+    if(!pos[idx]){ coachSay('Tap a piece first.'); return; }
+    selected = idx; drawBoard(); coachSay('Selected ' + idxToAlg(idx)); return;
+  }
+  if(selected === idx){ selected = null; drawBoard(); coachSay('Selection cleared.'); return; }
+  pos[idx] = pos[selected]; pos[selected] = ''; selected = null; drawBoard(); coachSay(`${playerName} moved to ${idxToAlg(idx)}.`);
 }
 
-/* controls */
-document.getElementById('flipBtn').addEventListener('click', ()=>{ flipped=!flipped; drawBoard(); });
-document.getElementById('resetBtn').addEventListener('click', ()=>{
-  pos = [
-    'r','n','b','q','k','b','n','r',
-    'p','p','p','p','p','p','p','p',
-    '','','','','','','','',
-    '','','','','','','','',
-    '','','','','','','','',
-    '','','','','','','','',
-    'P','P','P','P','P','P','P','P',
-    'R','N','B','Q','K','B','N','R'
-  ];
-  selected=null; flipped=false; coachBody.innerHTML=''; coachSay('Board reset.'); drawBoard();
-});
+/* helper */
+function idxToAlg(i){ return String.fromCharCode(97 + (i%8)) + (8 - Math.floor(i/8)); }
 
-/* coach */
-function coachSay(txt){ const d=document.createElement('div'); d.className='coachLine'; d.innerHTML='<strong>Coach:</strong> '+txt; coachBody.appendChild(d); coachBody.scrollTop=coachBody.scrollHeight; statusSmall.textContent='Coach: '+txt; }
-document.getElementById('whyBtn').addEventListener('click', ()=>coachSay('Because ideas beat memorization: ask what each piece does.'));
-document.getElementById('hideCoachBtn').addEventListener('click', ()=>{ const p=document.getElementById('coach'); p.style.display = p.style.display==='none'?'flex':'none'; });
+/* controls */
+document.getElementById('flipBtn').addEventListener('click', ()=>{ flipped = !flipped; drawBoard(); });
+document.getElementById('resetBtn').addEventListener('click', ()=>{ pos = [
+  'r','n','b','q','k','b','n','r',
+  'p','p','p','p','p','p','p','p',
+  '','','','','','','','',
+  '','','','','','','','',
+  '','','','','','','','',
+  '','','','','','','','',
+  'P','P','P','P','P','P','P','P',
+  'R','N','B','Q','K','B','N','R'
+]; selected = null; flipped = false; coachBody.innerHTML=''; coachSay('Board reset.'); drawBoard(); });
+
+document.getElementById('whyBtn').addEventListener('click', ()=>coachSay('Because chess is about ideas — think what your pieces control.'));
+document.getElementById('hideCoachBtn').addEventListener('click', ()=>{ const p=document.getElementById('coach'); p.style.display = p.style.display==='none' ? 'flex' : 'none'; });
 
 /* name memory */
 let playerName = localStorage.getItem('playerName') || null;
-if (!playerName){ playerName = prompt('What should I call you?'); if(!playerName) playerName='Friend'; localStorage.setItem('playerName',playerName); }
+if(!playerName){ playerName = prompt('What shall I call you?'); if(!playerName) playerName = 'Friend'; localStorage.setItem('playerName', playerName); }
 coachSay(`Hello ${playerName}. We learn from books and practice deliberately.`);
 
-/* draw initial */
+/* initial draw */
 drawBoard();
 </script>
 </body>

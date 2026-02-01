@@ -1,44 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Play vs Coach — Offline Fallback</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Play vs Coach — Premium SVG Pieces (Offline)</title>
 <style>
   :root{
-    --bg1:#0b1d33; --bg2:#07102a; --glass1:#e6eef6; --glass2:#c6d6e6;
-    --darksq:#3b4a5b; --lightsq:#dbe8f3;
+    --bg-top:#0b1d33; --bg-bottom:#07102a;
+    --glass-light:#eaf4fb; --glass-dark:#5e7184;
+    --accent:#7fbf3f;
   }
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:#e9f2ff;font-family:system-ui,Arial}
-  header{padding:18px;text-align:center;font-weight:700;font-size:20px}
-  #app{display:flex;gap:12px;height:calc(100vh - 64px);padding:6px;box-sizing:border-box;}
-  /* board column */
-  #left{flex:1;display:flex;flex-direction:column;align-items:center;}
-  /* blue-glass board container */
-  #boardWrap{background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); padding:12px;border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;}
-  #board{width:92vw;max-width:420px;aspect-ratio:1/1;display:grid;grid-template-columns:repeat(8,1fr);border-radius:10px;overflow:hidden}
-  .sq{display:flex;align-items:center;justify-content:center;font-size:calc(20px + 2vw);user-select:none;touch-action:manipulation}
-  .light{background:linear-gradient(180deg,var(--glass1),var(--glass2));color:#07102a}
-  .dark{background:linear-gradient(180deg,var(--darksq),#43566b);color:#eef6ff}
-  .selected{outline:4px solid rgba(124,175,63,0.55);box-shadow:0 6px 18px rgba(0,0,0,0.4)}
-  /* board controls */
-  .controls{margin-top:14px;display:flex;gap:12px;align-items:center}
-  .btn{padding:10px 14px;border-radius:12px;border:none;background:#1f2937;color:#eef6ff;font-weight:600;cursor:pointer}
-  .btn.primary{background:#7fbf3f;color:#05210a}
-  /* right panel - coach */
-  #coach{width:320px;background:rgba(2,6,23,0.6);border-left:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;padding:12px;box-sizing:border-box}
-  #coachHeader{display:flex;align-items:center;gap:12px;padding-bottom:8px}
-  #avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#fb7185);display:flex;align-items:center;justify-content:center;font-weight:700;color:#07102a}
-  #coachBody{flex:1;overflow:auto;padding-right:6px}
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg-top),var(--bg-bottom));font-family:system-ui,Arial;color:#eef6ff}
+  header{padding:16px;text-align:center;font-weight:700;font-size:20px}
+  #app {display:flex;gap:12px;height:calc(100vh - 56px);padding:8px;box-sizing:border-box}
+  /* left: board */
+  #left{flex:1;display:flex;flex-direction:column;align-items:center}
+  #boardWrap{background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); padding:14px;border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.6)}
+  #board{width:92vw;max-width:480px;aspect-ratio:1/1;display:grid;grid-template-columns:repeat(8,1fr);border-radius:12px;overflow:hidden}
+  .square{display:flex;align-items:center;justify-content:center;touch-action:manipulation;user-select:none}
+  .light{background:linear-gradient(180deg,var(--glass-light),#cfe3ee);color:#07102a}
+  .dark{background:linear-gradient(180deg,var(--glass-dark),#3b4f60);color:#eaf4fb}
+  .selected{outline:4px solid rgba(124,175,63,0.45);box-shadow:0 8px 14px rgba(0,0,0,0.4)}
+  /* svg pieces scale */
+  .piece-svg{width:76%;height:auto;pointer-events:none;display:block}
+  /* controls */
+  .controls{display:flex;gap:12px;align-items:center;margin-top:14px;width:100%;max-width:640px}
+  .btn{padding:10px 14px;border-radius:12px;border:none;background:#1f2937;color:#eef6ff;cursor:pointer}
+  .btn.primary{background:var(--accent);color:#05220b;font-weight:700}
+  /* coach panel */
+  #coach{width:340px;background:rgba(2,6,23,0.6);border-left:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;padding:12px;box-sizing:border-box}
+  #coachHeader{display:flex;gap:12px;align-items:center;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
+  #avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#fb7185);display:flex;align-items:center;justify-content:center;color:#07102a;font-weight:700}
+  #coachBody{flex:1;overflow:auto;padding-top:8px}
   .coachLine{margin-bottom:10px;font-size:14px}
-  #coachFooter{display:flex;gap:8px;padding-top:8px}
-  .small{font-size:13px;color:#cbd5e1}
-  /* responsive - hide coach on small */
+  #coachFooter{display:flex;gap:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.03)}
   @media(max-width:900px){#coach{display:none}}
 </style>
 </head>
 <body>
-
 <header>Play vs Coach</header>
 
 <div id="app">
@@ -51,16 +50,16 @@
       <button class="btn" id="resetBtn">Reset</button>
       <button class="btn primary" id="flipBtn">Flip Board</button>
       <div style="flex:1"></div>
-      <div class="small" id="statusSmall">Coach: Ready</div>
+      <div id="statusSmall" style="font-weight:600;color:#dbe8f3">Coach: Ready</div>
     </div>
   </div>
 
-  <div id="coach" role="region" aria-label="Coach panel">
+  <div id="coach">
     <div id="coachHeader">
       <div id="avatar">☺</div>
       <div>
         <div style="font-weight:700" id="coachName">Coach</div>
-        <div class="small" id="coachSub">Friendly teacher</div>
+        <div style="font-size:13px;color:#cbd5e1">Friendly teacher</div>
       </div>
     </div>
 
@@ -74,22 +73,13 @@
 </div>
 
 <script>
-/* -------------------------
-   Self-contained offline board
-   - No external libs
-   - Tap to move
-   - Unicode solid pieces
-   - Flip / reset
-   - Coach panel (right)
-   -------------------------*/
+/* ------------------------
+  Self-contained SVG piece renderer + board
+  No external files. Pieces are drawn with inline SVG shapes.
+  Focus: filled, premium-looking pieces (pawns emphasized).
+-------------------------*/
 
-/* Unicode pieces mapping (solid style) */
-const GLYPHS = {
-  r:'♜', n:'♞', b:'♝', q:'♛', k:'♚', p:'♟',
-  R:'♖', N:'♘', B:'♗', Q:'♕', K:'♔', P:'♙'
-};
-
-/* Start position array (8x8, index 0=a8, 63=h1) */
+/* Starting position, 0=a8 ... 63=h1 */
 let state = [
   'r','n','b','q','k','b','n','r',
   'p','p','p','p','p','p','p','p',
@@ -104,119 +94,177 @@ let state = [
 let flipped = false;
 let selected = null;
 
-/* DOM refs */
 const boardEl = document.getElementById('board');
 const coachBody = document.getElementById('coachBody');
 const statusSmall = document.getElementById('statusSmall');
 
-/* Draw board responsive */
-function drawBoard(){
+/* utilities */
+function idxToAlg(i){ return String.fromCharCode(97 + (i%8)) + (8 - Math.floor(i/8)); }
+function coachSay(text){ const d=document.createElement('div'); d.className='coachLine'; d.innerHTML='<strong>Coach:</strong> '+text; coachBody.appendChild(d); coachBody.scrollTop=coachBody.scrollHeight; statusSmall.textContent='Coach: '+text; }
+
+/* SVG piece factories: each returns an <svg> element (namespace created) */
+/* We'll draw stylized Staunton-like filled shapes (not exact copies) for premium look */
+
+function svgElem(tag, attrs){ const ns='http://www.w3.org/2000/svg'; const e=document.createElementNS(ns, tag); for(const k in attrs) e.setAttribute(k, attrs[k]); return e; }
+
+/* Pawn: circle + base + shadow */
+function createPawnSVG(color){
+  const svg = svgElem('svg',{viewBox:'0 0 120 120', class:'piece-svg', xmlns:'http://www.w3.org/2000/svg'});
+  const fill = color==='w'?'#fff':'#0b1220';
+  const stroke = color==='w'?'#1d2935':'#dbe8f3';
+  // shadow
+  svg.appendChild(svgElem('ellipse',{cx:60,cy:98,rx:34,ry:8,fill:'rgba(0,0,0,0.25)'}));
+  // base
+  svg.appendChild(svgElem('rect',{x:26,y:80,width:68,height:10,rx:5,fill:fill,stroke:stroke, 'stroke-width':2}));
+  // dome
+  svg.appendChild(svgElem('circle',{cx:60,cy:44,r:22,fill:fill,stroke:stroke,'stroke-width':3}));
+  // neck
+  svg.appendChild(svgElem('rect',{x:45,y:58,width:30,height:18,rx:6,fill:fill,stroke:stroke,'stroke-width':3}));
+  return svg;
+}
+
+/* Rook: main tower + battlements */
+function createRookSVG(color){
+  const svg = svgElem('svg',{viewBox:'0 0 120 120', class:'piece-svg'});
+  const fill = color==='w'?'#fff':'#0b1220';
+  const stroke = color==='w'?'#1d2935':'#dbe8f3';
+  svg.appendChild(svgElem('ellipse',{cx:60,cy:98,rx:34,ry:8,fill:'rgba(0,0,0,0.25)'}));
+  svg.appendChild(svgElem('rect',{x:30,y:38,width:60,height:42,rx:6,fill:fill,stroke:stroke,'stroke-width':3}));
+  // battlements
+  svg.appendChild(svgElem('rect',{x:28,y:24,width:12,height:14,fill:fill,stroke:stroke,'stroke-width':3}));
+  svg.appendChild(svgElem('rect',{x:48,y:24,width:12,height:14,fill:fill,stroke:stroke,'stroke-width':3}));
+  svg.appendChild(svgElem('rect',{x:68,y:24,width:12,height:14,fill:fill,stroke:stroke,'stroke-width':3}));
+  // base
+  svg.appendChild(svgElem('rect',{x:20,y:84,width:80,height:10,rx:5,fill:fill,stroke:stroke,'stroke-width':3}));
+  return svg;
+}
+
+/* Knight: stylized horse head silhouette */
+function createKnightSVG(color){
+  const svg = svgElem('svg',{viewBox:'0 0 120 120', class:'piece-svg'});
+  const fill = color==='w'?'#fff':'#0b1220';
+  const stroke = color==='w'?'#1d2935':'#dbe8f3';
+  svg.appendChild(svgElem('ellipse',{cx:60,cy:98,rx:34,ry:8,fill:'rgba(0,0,0,0.25)'}));
+  const path = svgElem('path',{d:'M30 80 C48 58,62 58,74 44 C78 40,86 36,94 36 C86 28,72 20,60 28 C54 32,50 38,44 40 C36 42,30 54,30 80 Z',fill:fill,stroke:stroke,'stroke-width':3});
+  svg.appendChild(path);
+  return svg;
+}
+
+/* Bishop: mitre with diagonal cut */
+function createBishopSVG(color){
+  const svg = svgElem('svg',{viewBox:'0 0 120 120', class:'piece-svg'});
+  const fill = color==='w'?'#fff':'#0b1220';
+  const stroke = color==='w'?'#1d2935':'#dbe8f3';
+  svg.appendChild(svgElem('ellipse',{cx:60,cy:98,rx:34,ry:8,fill:'rgba(0,0,0,0.25)'}));
+  svg.appendChild(svgElem('path',{d:'M40 46 C58 24,82 24,86 46 C70 58,66 68,60 74 C54 68,48 58,40 46 Z',fill:fill,stroke:stroke,'stroke-width':3}));
+  svg.appendChild(svgElem('line',{x1:48,y1:32,x2:72,y2:56,stroke:stroke,'stroke-width':3}));
+  svg.appendChild(svgElem('rect',{x:26,y:84,width:68,height:10,rx:5,fill:fill,stroke:stroke,'stroke-width':3}));
+  return svg;
+}
+
+/* Queen: crown + body */
+function createQueenSVG(color){
+  const svg = svgElem('svg',{viewBox:'0 0 120 120', class:'piece-svg'});
+  const fill = color==='w'?'#fff':'#0b1220';
+  const stroke = color==='w'?'#1d2935':'#dbe8f3';
+  svg.appendChild(svgElem('ellipse',{cx:60,cy:98,rx:34,ry:8,fill:'rgba(0,0,0,0.25)'}));
+  // crown
+  svg.appendChild(svgElem('path',{d:'M22 46 L36 66 L50 44 L64 66 L78 44 L96 66 L96 46 L22 46 Z',fill:fill,stroke:stroke,'stroke-width':3}));
+  svg.appendChild(svgElem('rect',{x:32,y:74,width:56,height:10,rx:5,fill:fill,stroke:stroke,'stroke-width':3}));
+  return svg;
+}
+
+/* King: crown + cross */
+function createKingSVG(color){
+  const svg = svgElem('svg',{viewBox:'0 0 120 120', class:'piece-svg'});
+  const fill = color==='w'?'#fff':'#0b1220';
+  const stroke = color==='w'?'#1d2935':'#dbe8f3';
+  svg.appendChild(svgElem('ellipse',{cx:60,cy:98,rx:34,ry:8,fill:'rgba(0,0,0,0.25)'}));
+  svg.appendChild(svgElem('path',{d:'M22 46 L36 66 L50 46 L64 66 L78 46 L96 66 L96 46 L22 46 Z',fill:fill,stroke:stroke,'stroke-width':3}));
+  // cross
+  svg.appendChild(svgElem('rect',{x:56,y:22,width:8,height:18,fill:fill,stroke:stroke,'stroke-width':3}));
+  svg.appendChild(svgElem('rect',{x:48,y:30,width:24,height:8,fill:fill,stroke:stroke,'stroke-width':3}));
+  svg.appendChild(svgElem('rect',{x:32,y:76,width:56,height:10,rx:5,fill:fill,stroke:stroke,'stroke-width':3}));
+  return svg;
+}
+
+/* map piece letter to factory */
+const factory = {
+  'p':(c)=>createPawnSVG(c),
+  'r':(c)=>createRookSVG(c),
+  'n':(c)=>createKnightSVG(c),
+  'b':(c)=>createBishopSVG(c),
+  'q':(c)=>createQueenSVG(c),
+  'k':(c)=>createKingSVG(c)
+};
+
+function isUpper(ch){ return ch === ch.toUpperCase(); }
+
+/* draw board - draws SVG pieces inline */
+function drawBoard() {
   boardEl.innerHTML = '';
-  const order = flipped ? [...Array(64).keys()].reverse() : [...Array(64).keys()];
-  order.forEach(idx=>{
-    const cell = document.createElement('div');
-    const row = Math.floor(idx/8);
-    const col = idx%8;
-    const dark = (row + col) % 2 === 1;
-    cell.className = 'sq ' + (dark ? 'dark' : 'light');
-    cell.dataset.idx = idx;
-    const val = state[idx];
-    cell.textContent = val ? GLYPHS[val] : '';
-    cell.addEventListener('click', onSquareClick);
-    if(selected === idx) cell.classList.add('selected');
-    boardEl.appendChild(cell);
-  });
-}
+  const order = [...Array(64).keys()];
+  if (flipped) order.reverse();
+  for (const idx of order) {
+    const r = Math.floor(idx / 8);
+    const c = idx % 8;
+    const square = document.createElement('div');
+    square.className = 'square ' + (((r + c) % 2) ? 'dark' : 'light');
+    square.dataset.idx = idx;
+    square.addEventListener('click', ()=>onSquareClick(idx));
 
-/* utility */
-function idxToAlg(i){
-  const file = String.fromCharCode(97 + (i % 8));
-  const rank = 8 - Math.floor(i/8);
-  return file + rank;
-}
+    const p = state[idx];
+    if (p) {
+      const color = isUpper(p) ? 'w' : 'b';
+      const key = p.toLowerCase();
+      if (factory[key]) {
+        const svg = factory[key](color);
+        svg.classList.add('piece-svg');
+        square.appendChild(svg);
+      } else {
+        const sp = document.createElement('div');
+        sp.textContent = GLYPHS[p] || '?';
+        sp.style.fontSize = '34px';
+        sp.style.filter = 'drop-shadow(0 6px 10px rgba(0,0,0,0.5))';
+        square.appendChild(sp);
+      }
+    }
 
-/* coach messages */
-function coachSay(txt){
-  const d = document.createElement('div');
-  d.className = 'coachLine';
-  d.innerHTML = '<strong>Coach:</strong> ' + txt;
-  coachBody.appendChild(d);
-  coachBody.scrollTop = coachBody.scrollHeight;
-  statusSmall.textContent = 'Coach: ' + txt;
-}
-
-/* click handler (tap to move) */
-function onSquareClick(e){
-  const i = Number(e.currentTarget.dataset.idx);
-  if(selected === null){
-    if(!state[i]) { coachSay('Tap a piece first.'); return; }
-    selected = i;
-    drawBoard();
-    coachSay('Selected ' + idxToAlg(i));
-    return;
+    if (selected === idx) square.classList.add('selected');
+    boardEl.appendChild(square);
   }
-  if(selected === i){
-    selected = null;
-    drawBoard();
-    coachSay('Selection cleared.');
-    return;
-  }
-  // move (no legality check in offline fallback)
-  state[i] = state[selected];
-  state[selected] = '';
-  const movedTo = idxToAlg(i);
-  const movedFrom = idxToAlg(selected);
-  coachSay(`${playerName || 'Player'} moved ${movedFrom} → ${movedTo}.`);
-  selected = null;
-  drawBoard();
 }
 
-/* flip and reset */
-document.getElementById('flipBtn').addEventListener('click', ()=>{
-  flipped = !flipped;
-  drawBoard();
-});
+/* click handling */
+function onSquareClick(idx) {
+  if (selected === null) {
+    if (!state[idx]) { coachSay('Tap a piece first.'); return; }
+    selected = idx; drawBoard(); coachSay('Selected ' + idxToAlg(idx)); return;
+  }
+  if (selected === idx) { selected = null; drawBoard(); coachSay('Selection cleared.'); return; }
+  state[idx] = state[selected]; state[selected] = ''; selected = null; drawBoard();
+  coachSay(`${playerName} moved to ${idxToAlg(idx)}.`);
+}
 
-document.getElementById('resetBtn').addEventListener('click', ()=>{
-  state = [
-    'r','n','b','q','k','b','n','r',
-    'p','p','p','p','p','p','p','p',
-    '','','','','','','','',
-    '','','','','','','','',
-    '','','','','','','','',
-    '','','','','','','','',
-    'P','P','P','P','P','P','P','P',
-    'R','N','B','Q','K','B','N','R'
-  ];
-  flipped = false;
-  selected = null;
-  coachBody.innerHTML = '';
-  coachSay('Board reset.');
-  drawBoard();
-});
+/* controls */
+document.getElementById('flipBtn').addEventListener('click', ()=>{ flipped = !flipped; drawBoard(); });
+document.getElementById('resetBtn').addEventListener('click', ()=>{ state = [
+  'r','n','b','q','k','b','n','r','p','p','p','p','p','p','p','p',
+  '','','','','','','','','','','','','','','','','',
+  'P','P','P','P','P','P','P','P','R','N','B','Q','K','B','N','R'
+]; selected = null; flipped = false; coachBody.innerHTML=''; coachSay('Board reset.'); drawBoard(); });
 
-/* why button */
-document.getElementById('whyBtn').addEventListener('click', ()=>{
-  coachSay('Because each move should serve a plan — ask what your pieces aim to do.');
-});
+document.getElementById('whyBtn').addEventListener('click', ()=>coachSay('Because every move should further your plan—ask why your piece is where it is.'));
+document.getElementById('hideCoachBtn').addEventListener('click', ()=>{ const p=document.getElementById('coach'); p.style.display = p.style.display==='none'?'flex':'none'; });
 
-/* hide coach */
-document.getElementById('hideCoachBtn').addEventListener('click', ()=>{
-  const panel = document.getElementById('coach');
-  panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
-});
-
-/* name memory */
+/* coach and name */
 let playerName = localStorage.getItem('playerName') || null;
-if(!playerName){
+if (!playerName) {
   playerName = prompt('What should I call you? (first name)');
-  if(!playerName) playerName = 'Friend';
+  if (!playerName) playerName = 'Friend';
   localStorage.setItem('playerName', playerName);
 }
-coachSay(`Hello ${playerName}. We'll learn from books and practice.`);
-
-/* small difficulty slider & timer are omitted in fallback to keep UI simple,
-   we simulate difficulty later when we have engine access. */
+coachSay(`Hello ${playerName}. We will learn from the books and practice thoughtfully.`);
 
 /* initial draw */
 drawBoard();

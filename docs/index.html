@@ -1,140 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Offline Chess Coach</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offline Chess Coach</title>
 
-<style>
-body {
-  margin: 0;
-  background: #121212;
-  color: #ffffff;
-  font-family: system-ui, sans-serif;
-  padding-bottom: 72px; /* space for bottom nav */
-}
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, #0b1d2a, #020a13);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
 
-.header {
-  padding: 16px;
-  font-size: 1.4rem;
-  font-weight: 600;
-}
+    .app {
+      width: 100%;
+      max-width: 420px;
+      padding: 16px;
+      text-align: center;
+    }
 
-.section {
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid #222;
-}
+    h1 {
+      margin: 10px 0 14px;
+      font-size: 22px;
+    }
 
-.preview {
-  width: 72px;
-  height: 72px;
-  background: #1e293b;
-  border-radius: 12px;
-  margin-right: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-}
+    /* Coach */
+    .coach-box {
+      display: flex;
+      align-items: center;
+      background: rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 10px;
+      margin-bottom: 14px;
+    }
 
-.text h3 {
-  margin: 0;
-  font-size: 1.1rem;
-}
+    .coach-box img {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 2px solid #2ecc71;
+      margin-right: 12px;
+      object-fit: cover;
+    }
 
-.text p {
-  margin: 4px 0 0;
-  font-size: 0.9rem;
-  color: #b0b0b0;
-}
+    .coach-text {
+      text-align: left;
+      font-size: 13px;
+      opacity: 0.9;
+    }
 
-.play-button {
-  margin: 20px 16px;
-  background: #7cb342;
-  color: #000;
-  font-size: 1.1rem;
-  padding: 16px;
-  border-radius: 12px;
-  text-align: center;
-  font-weight: bold;
-}
+    /* Board */
+    .board-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-top: 14px;
+    }
 
-.play-button a {
-  color: inherit;
-  text-decoration: none;
-}
+    .board {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      width: 320px;
+      height: 320px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
 
-/* Bottom Navigation */
-.nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 64px;
-  background: #0f172a;
-  display: flex;
-  border-top: 1px solid #1e293b;
-}
+    .square {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 34px;
+      user-select: none;
+    }
 
-.nav a {
-  flex: 1;
-  text-align: center;
-  padding-top: 6px;
-  font-size: 0.75rem;
-  color: #cbd5f5;
-  text-decoration: none;
-}
+    .light { background: #e0e6eb; }
+    .dark  { background: #6b8795; }
 
-.nav span {
-  display: block;
-  font-size: 1.4rem;
-  margin-bottom: 2px;
-}
-</style>
+    .piece {
+      cursor: pointer;
+    }
+
+    .selected {
+      outline: 3px solid #2ecc71;
+      outline-offset: -3px;
+      border-radius: 6px;
+    }
+  </style>
 </head>
 
 <body>
+  <div class="app">
+    <h1>Offline Chess Coach</h1>
 
-<div class="header">Offline Chess Coach</div>
+    <!-- COACH (VISIBLE & STABLE) -->
+    <div class="coach-box">
+      <img src="coach.png" alt="Coach" />
+      <div class="coach-text">
+        <strong>Coach</strong><br>
+        Tap a piece, then tap a square to move.
+      </div>
+    </div>
 
-<div class="section">
-  <div class="preview">▶️</div>
-  <div class="text">
-    <h3>Play</h3>
-    <p>Play a focused offline game</p>
+    <!-- BOARD -->
+    <div class="board-wrapper">
+      <div id="board" class="board"></div>
+    </div>
   </div>
-</div>
 
-<div class="section">
-  <div class="preview">🧩</div>
-  <div class="text">
-    <h3>Solve Puzzles</h3>
-    <p>Find the best moves</p>
-  </div>
-</div>
+  <script>
+    const boardEl = document.getElementById("board");
 
-<div class="section">
-  <div class="preview">🎓</div>
-  <div class="text">
-    <h3>Training</h3>
-    <p>Learn strategy and ideas</p>
-  </div>
-</div>
+    // Board state (WORKING FOUNDATION)
+    const boardState = [
+      '♜','♞','♝','♛','♚','♝','♞','♜',
+      '♟','♟','♟','♟','♟','♟','♟','♟',
+      '','','','','','','','',
+      '','','','','','','','',
+      '','','','','','','','',
+      '','','','','','','','',
+      '♙','♙','♙','♙','♙','♙','♙','♙',
+      '♖','♘','♗','♕','♔','♗','♘','♖'
+    ];
 
-<div class="play-button">
-  <a href="play.html">Play</a>
-</div>
+    let selectedIndex = null;
 
-<!-- Bottom Navigation -->
-<div class="nav">
-  <a href="index.html"><span>🏠</span>Home</a>
-  <a href="puzzles.html"><span>🧩</span>Puzzles</a>
-  <a href="training.html"><span>🎓</span>Learn</a>
-  <a href="#"><span>👀</span>Watch</a>
-  <a href="#"><span>☰</span>More</a>
-</div>
+    function renderBoard() {
+      boardEl.innerHTML = "";
 
+      boardState.forEach((piece, index) => {
+        const square = document.createElement("div");
+        square.className =
+          "square " + ((Math.floor(index / 8) + index) % 2 === 0 ? "light" : "dark");
+
+        if (piece) {
+          const span = document.createElement("span");
+          span.textContent = piece;
+          span.className = "piece";
+
+          if (index === selectedIndex) {
+            span.classList.add("selected");
+          }
+
+          square.appendChild(span);
+        }
+
+        square.addEventListener("click", () => handleTap(index));
+        boardEl.appendChild(square);
+      });
+    }
+
+    function handleTap(index) {
+      // Select piece
+      if (selectedIndex === null) {
+        if (boardState[index] !== "") {
+          selectedIndex = index;
+          renderBoard();
+        }
+        return;
+      }
+
+      // Deselect
+      if (index === selectedIndex) {
+        selectedIndex = null;
+        renderBoard();
+        return;
+      }
+
+      // Move (no rules yet — intentional)
+      boardState[index] = boardState[selectedIndex];
+      boardState[selectedIndex] = "";
+      selectedIndex = null;
+      renderBoard();
+    }
+
+    renderBoard();
+  </script>
 </body>
   </html>

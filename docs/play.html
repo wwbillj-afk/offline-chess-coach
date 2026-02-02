@@ -1,163 +1,157 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Offline Chess Coach</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: radial-gradient(circle at top, #0b1d2a, #020a13);
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-    }.app {
-  width: 100%;
-  max-width: 420px;
-  padding: 20px;
-  text-align: center;
-}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Play Chess</title>
 
-h1 {
-  margin: 10px 0 20px;
-  font-size: 22px;
-}
+<style>
+  body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    background: radial-gradient(circle at top, #0b1d2a, #020a13);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
 
-.coach-box {
-  display: flex;
-  align-items: center;
-  background: rgba(255,255,255,0.06);
-  border-radius: 14px;
-  padding: 10px;
-  margin-bottom: 16px;
-}
+  .app {
+    width: 100%;
+    max-width: 420px;
+    padding: 16px;
+  }
 
-.coach-box img {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: 2px solid #2ecc71;
-  margin-right: 12px;
-  object-fit: cover;
-}
+  .coach-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 16px;
+  }
 
-.coach-text {
-  text-align: left;
-  font-size: 13px;
-  opacity: 0.9;
-}
+  .coach-box img {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 2px solid #2ecc71;
+    object-fit: cover;
+  }
 
-.board-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-}
+  .coach-text {
+    font-size: 13px;
+    line-height: 1.4;
+  }
 
-.board {
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  grid-template-rows: repeat(8, 1fr);
-  width: 320px;
-  height: 320px;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-  touch-action: none;
-}
+  .board {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    width: 320px;
+    height: 320px;
+    margin: 0 auto;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  }
 
-.square {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 34px;
-  user-select: none;
-}
+  .square {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+    user-select: none;
+  }
 
-.light { background: #e0e6eb; }
-.dark { background: #6b8795; }
+  .light { background: #e0e6eb; }
+  .dark { background: #6b8795; }
 
-.piece {
-  cursor: grab;
-}
-
-.dragging {
-  opacity: 0.4;
-}
-
-  </style>
+  .selected {
+    outline: 3px solid #2ecc71;
+    outline-offset: -3px;
+  }
+</style>
 </head>
+
 <body>
-  <div class="app">
-    <h1>Offline Chess Coach</h1><div class="coach-box">
-  <img src="coach.png" alt="Coach" />
-  <div class="coach-text">
-    <strong>Coach</strong><br />
-    Tap and drag a piece to move it.
+<div class="app">
+
+  <div class="coach-box">
+    <img src="coach.png" alt="Coach">
+    <div class="coach-text">
+      <strong>Coach</strong><br>
+      Tap a piece, then tap a square to move it.
+    </div>
   </div>
-</div>
 
-<div class="board-wrapper">
   <div id="board" class="board"></div>
+
 </div>
 
-  </div>  <script>
-    const boardEl = document.getElementById('board');
+<script>
+  const boardEl = document.getElementById('board');
 
-    const initialBoard = [
-      '♜','♞','♝','♛','♚','♝','♞','♜',
-      '♟','♟','♟','♟','♟','♟','♟','♟',
-      '','','','','','','','',
-      '','','','','','','','',
-      '','','','','','','','',
-      '','','','','','','','',
-      '♙','♙','♙','♙','♙','♙','♙','♙',
-      '♖','♘','♗','♕','♔','♗','♘','♖'
-    ];
+  const boardState = [
+    '♜','♞','♝','♛','♚','♝','♞','♜',
+    '♟','♟','♟','♟','♟','♟','♟','♟',
+    '','','','','','','','',
+    '','','','','','','','',
+    '','','','','','','','',
+    '','','','','','','','',
+    '♙','♙','♙','♙','♙','♙','♙','♙',
+    '♖','♘','♗','♕','♔','♗','♘','♖'
+  ];
 
-    let draggedPiece = null;
+  let selectedIndex = null;
 
-    function renderBoard() {
-      boardEl.innerHTML = '';
-      initialBoard.forEach((piece, i) => {
-        const square = document.createElement('div');
-        square.className = 'square ' + ((Math.floor(i / 8) + i) % 2 === 0 ? 'light' : 'dark');
-        square.dataset.index = i;
+  function renderBoard() {
+    boardEl.innerHTML = '';
 
-        if (piece) {
-          const span = document.createElement('span');
-          span.textContent = piece;
-          span.className = 'piece';
-          span.draggable = true;
+    boardState.forEach((piece, index) => {
+      const square = document.createElement('div');
+      const isLight = (Math.floor(index / 8) + index) % 2 === 0;
 
-          span.addEventListener('dragstart', e => {
-            draggedPiece = i;
-            span.classList.add('dragging');
-          });
+      square.className = 'square ' + (isLight ? 'light' : 'dark');
 
-          span.addEventListener('dragend', () => {
-            draggedPiece = null;
-            span.classList.remove('dragging');
-          });
+      if (index === selectedIndex) {
+        square.classList.add('selected');
+      }
 
-          square.appendChild(span);
-        }
+      square.textContent = piece;
 
-        square.addEventListener('dragover', e => e.preventDefault());
+      square.addEventListener('click', () => handleTap(index));
 
-        square.addEventListener('drop', () => {
-          if (draggedPiece !== null) {
-            initialBoard[i] = initialBoard[draggedPiece];
-            initialBoard[draggedPiece] = '';
-            renderBoard();
-          }
-        });
+      boardEl.appendChild(square);
+    });
+  }
 
-        boardEl.appendChild(square);
-      });
+  function handleTap(index) {
+    // No piece selected yet
+    if (selectedIndex === null) {
+      if (boardState[index] !== '') {
+        selectedIndex = index;
+        renderBoard();
+      }
+      return;
     }
 
+    // Tap same square = cancel
+    if (index === selectedIndex) {
+      selectedIndex = null;
+      renderBoard();
+      return;
+    }
+
+    // Move piece (no rules yet)
+    boardState[index] = boardState[selectedIndex];
+    boardState[selectedIndex] = '';
+    selectedIndex = null;
     renderBoard();
-  </script></body>
-</html>
+  }
+
+  renderBoard();
+</script>
+
+</body>
+      </html>

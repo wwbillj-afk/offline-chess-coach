@@ -1,138 +1,163 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Offline Chess Coach</title>
-
-<style>
-body {
-  margin: 0;
-  font-family: system-ui, sans-serif;
-  background: radial-gradient(circle at top, #0f1f2f, #050b12);
-  color: #fff;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offline Chess Coach</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, #0b1d2a, #020a13);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }.app {
+  width: 100%;
+  max-width: 420px;
+  padding: 20px;
+  text-align: center;
 }
 
 h1 {
-  text-align: center;
-  margin: 24px 0 12px;
-}
-
-.panel {
-  max-width: 420px;
-  margin: auto;
-  padding: 16px;
+  margin: 10px 0 20px;
+  font-size: 22px;
 }
 
 .coach-box {
   display: flex;
   align-items: center;
-  gap: 12px;
   background: rgba(255,255,255,0.06);
   border-radius: 14px;
-  padding: 12px;
+  padding: 10px;
+  margin-bottom: 16px;
 }
 
 .coach-box img {
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
+  border: 2px solid #2ecc71;
+  margin-right: 12px;
   object-fit: cover;
-  border: 2px solid #35d06c;
 }
 
-button {
-  width: 100%;
-  margin-top: 16px;
-  padding: 14px;
-  font-size: 16px;
-  font-weight: bold;
-  border: none;
-  border-radius: 30px;
-  background: #35d06c;
-  color: #000;
+.coach-text {
+  text-align: left;
+  font-size: 13px;
+  opacity: 0.9;
 }
 
-#board {
-  display: none;
-  max-width: 360px;
-  margin: 20px auto;
+.board-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
 }
 
-.chessboard {
+.board {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
-  aspect-ratio: 1 / 1;
-  border-radius: 14px;
+  grid-template-rows: repeat(8, 1fr);
+  width: 320px;
+  height: 320px;
+  border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  touch-action: none;
 }
 
 .square {
   display: flex;
-  align-items: center;
   justify-content: center;
-  font-size: 26px;
+  align-items: center;
+  font-size: 34px;
   user-select: none;
 }
 
-.dark { background: #4b6a7a; }
-.light { background: #dbe7ef; }
-</style>
-</head>
+.light { background: #e0e6eb; }
+.dark { background: #6b8795; }
 
-<body>
-
-<h1>Offline Chess Coach</h1>
-
-<div class="panel" id="menu">
-  <div class="coach-box">
-    <img src="file_00000000d88871fdb6de52fee7800f79.png" alt="Coach">
-    <div>
-      <strong>Coach</strong><br>
-      Welcome. Pick a level and press <b>Start game</b>.
-    </div>
-  </div>
-
-  <button id="startBtn">Start game</button>
-</div>
-
-<div id="board">
-  <div class="chessboard" id="chessboard"></div>
-</div>
-
-<script>
-const startBtn = document.getElementById("startBtn");
-const menu = document.getElementById("menu");
-const boardWrap = document.getElementById("board");
-const boardEl = document.getElementById("chessboard");
-
-const pieces = [
-  "♜","♞","♝","♛","♚","♝","♞","♜",
-  "♟","♟","♟","♟","♟","♟","♟","♟",
-  "","","","","","","","",
-  "","","","","","","","",
-  "","","","","","","","",
-  "","","","","","","","",
-  "♙","♙","♙","♙","♙","♙","♙","♙",
-  "♖","♘","♗","♕","♔","♗","♘","♖"
-];
-
-function drawBoard() {
-  boardEl.innerHTML = "";
-  for (let i = 0; i < 64; i++) {
-    const sq = document.createElement("div");
-    sq.className = "square " + ((Math.floor(i/8)+i)%2 ? "dark" : "light");
-    sq.textContent = pieces[i];
-    boardEl.appendChild(sq);
-  }
+.piece {
+  cursor: grab;
 }
 
-startBtn.addEventListener("click", () => {
-  menu.style.display = "none";
-  boardWrap.style.display = "block";
-  drawBoard();
-});
-</script>
+.dragging {
+  opacity: 0.4;
+}
 
-</body>
-  </html>
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Offline Chess Coach</h1><div class="coach-box">
+  <img src="coach.png" alt="Coach" />
+  <div class="coach-text">
+    <strong>Coach</strong><br />
+    Tap and drag a piece to move it.
+  </div>
+</div>
+
+<div class="board-wrapper">
+  <div id="board" class="board"></div>
+</div>
+
+  </div>  <script>
+    const boardEl = document.getElementById('board');
+
+    const initialBoard = [
+      '♜','♞','♝','♛','♚','♝','♞','♜',
+      '♟','♟','♟','♟','♟','♟','♟','♟',
+      '','','','','','','','',
+      '','','','','','','','',
+      '','','','','','','','',
+      '','','','','','','','',
+      '♙','♙','♙','♙','♙','♙','♙','♙',
+      '♖','♘','♗','♕','♔','♗','♘','♖'
+    ];
+
+    let draggedPiece = null;
+
+    function renderBoard() {
+      boardEl.innerHTML = '';
+      initialBoard.forEach((piece, i) => {
+        const square = document.createElement('div');
+        square.className = 'square ' + ((Math.floor(i / 8) + i) % 2 === 0 ? 'light' : 'dark');
+        square.dataset.index = i;
+
+        if (piece) {
+          const span = document.createElement('span');
+          span.textContent = piece;
+          span.className = 'piece';
+          span.draggable = true;
+
+          span.addEventListener('dragstart', e => {
+            draggedPiece = i;
+            span.classList.add('dragging');
+          });
+
+          span.addEventListener('dragend', () => {
+            draggedPiece = null;
+            span.classList.remove('dragging');
+          });
+
+          square.appendChild(span);
+        }
+
+        square.addEventListener('dragover', e => e.preventDefault());
+
+        square.addEventListener('drop', () => {
+          if (draggedPiece !== null) {
+            initialBoard[i] = initialBoard[draggedPiece];
+            initialBoard[draggedPiece] = '';
+            renderBoard();
+          }
+        });
+
+        boardEl.appendChild(square);
+      });
+    }
+
+    renderBoard();
+  </script></body>
+</html>

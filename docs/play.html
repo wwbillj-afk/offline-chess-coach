@@ -1,156 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Offline Chess Coach</title>
-
-<link rel="stylesheet" href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"/>
 
 <style>
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
-  background: radial-gradient(circle at top, #0b1d33, #020617);
-  color: #e5e7eb;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: radial-gradient(circle at top, #0f1f2f, #050b12);
+  color: #fff;
 }
 
-header {
+h1 {
   text-align: center;
-  font-size: 28px;
-  font-weight: 700;
-  padding: 24px 12px;
+  margin: 24px 0 12px;
 }
 
 .panel {
   max-width: 420px;
-  margin: 0 auto;
+  margin: auto;
   padding: 16px;
 }
 
-.coach-card {
+.coach-box {
   display: flex;
-  gap: 14px;
   align-items: center;
+  gap: 12px;
   background: rgba(255,255,255,0.06);
   border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 20px;
+  padding: 12px;
 }
 
-.coach-card img {
+.coach-box img {
   width: 64px;
   height: 64px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #22c55e;
+  border: 2px solid #35d06c;
 }
 
 .coach-text {
   font-size: 14px;
+  line-height: 1.4;
 }
 
 label {
-  font-size: 14px;
+  display: block;
+  margin: 18px 0 6px;
 }
 
-input[type="range"] {
+input[type=range] {
   width: 100%;
-  margin: 10px 0 6px;
-}
-
-.level {
-  font-size: 13px;
-  opacity: 0.8;
-  margin-bottom: 12px;
 }
 
 button {
   width: 100%;
+  margin-top: 16px;
   padding: 14px;
   font-size: 16px;
-  font-weight: 600;
-  border-radius: 999px;
+  font-weight: bold;
   border: none;
-  cursor: pointer;
-}
-
-.start {
-  background: #22c55e;
-  color: #022c22;
+  border-radius: 30px;
+  background: #35d06c;
+  color: #000;
 }
 
 #board {
-  width: 100%;
-  max-width: 420px;
-  margin: 24px auto;
   display: none;
+  max-width: 360px;
+  margin: 20px auto;
 }
+
+.chessboard {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.square {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+
+.dark { background: #4b6a7a; }
+.light { background: #dbe7ef; }
+
 </style>
 </head>
 
 <body>
 
-<header>Offline Chess Coach</header>
+<h1>Offline Chess Coach</h1>
 
-<div class="panel">
-
-  <div class="coach-card">
-    <img src="./file_0000000db887f6dde52fee7800f79.png" alt="Coach">
+<div class="panel" id="menu">
+  <div class="coach-box">
+    <img src="file_0000000db887f6dde52fee7800f79.png" alt="Coach">
     <div class="coach-text">
       <strong>Coach</strong><br>
       Welcome. Pick a level and press <b>Start game</b>.
     </div>
   </div>
 
-  <label>Difficulty — <span id="lvl">5</span></label>
-  <input id="difficulty" type="range" min="1" max="10" value="5">
-  <div class="level" id="lvlText">Intermediate</div>
+  <label>Difficulty</label>
+  <input type="range" min="1" max="5" value="3">
 
-  <button class="start" id="startBtn">Start game</button>
-
+  <button id="startBtn">Start game</button>
 </div>
 
-<div id="board"></div>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.13.4/chess.min.js"></script>
-<script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+<div id="board">
+  <div class="chessboard" id="chessboard"></div>
+</div>
 
 <script>
-const levels = [
-  "Beginner","Beginner","Novice","Novice",
-  "Intermediate","Intermediate",
-  "Advanced","Advanced","Master","Master"
+const boardEl = document.getElementById("chessboard");
+const startBtn = document.getElementById("startBtn");
+const menu = document.getElementById("menu");
+const boardWrap = document.getElementById("board");
+
+const pieces = [
+  "♜","♞","♝","♛","♚","♝","♞","♜",
+  "♟","♟","♟","♟","♟","♟","♟","♟",
+  "","","","","","","","",
+  "","","","","","","","",
+  "","","","","","","","",
+  "","","","","","","","",
+  "♙","♙","♙","♙","♙","♙","♙","♙",
+  "♖","♘","♗","♕","♔","♗","♘","♖"
 ];
 
-const slider = document.getElementById("difficulty");
-const lvl = document.getElementById("lvl");
-const lvlText = document.getElementById("lvlText");
+function drawBoard() {
+  boardEl.innerHTML = "";
+  for (let i = 0; i < 64; i++) {
+    const sq = document.createElement("div");
+    sq.className = "square " + ((Math.floor(i/8)+i)%2 ? "dark" : "light");
+    sq.textContent = pieces[i];
+    boardEl.appendChild(sq);
+  }
+}
 
-slider.oninput = () => {
-  lvl.textContent = slider.value;
-  lvlText.textContent = levels[slider.value - 1];
-};
-
-let board, game;
-
-document.getElementById("startBtn").onclick = () => {
-  game = new Chess();
-
-  document.querySelector(".panel").style.display = "none";
-  const boardDiv = document.getElementById("board");
-  boardDiv.style.display = "block";
-
-  board = Chessboard("board", {
-    position: "start",
-    draggable: true,
-    pieceTheme: "pieces/{piece}.svg",
-    onDrop: (s, t) => {
-      const move = game.move({from: s, to: t, promotion: "q"});
-      if (move === null) return "snapback";
-    }
-  });
+startBtn.onclick = () => {
+  menu.style.display = "none";
+  boardWrap.style.display = "block";
+  drawBoard();
 };
 </script>
 

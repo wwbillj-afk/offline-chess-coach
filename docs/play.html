@@ -1,166 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Offline Chess Coach</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Offline Chess Coach — Play</title>
 
-<!-- Chessboard -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"/>
 
 <style>
-body {
-  margin: 0;
-  background: radial-gradient(circle at top, #0b1d33, #020617);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  color: #e5e7eb;
-}
-
-/* HEADER */
-header {
-  padding: 16px;
-  text-align: center;
-  font-size: 22px;
-  font-weight: 600;
-}
-
-/* COACH CARD */
-#coach-card {
-  margin: 12px;
-  padding: 14px;
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  background: rgba(2,6,23,0.85);
-  border-radius: 16px;
-}
-
-#coach-avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-#coach-text {
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-/* BOARD */
-#board-wrapper {
-  display: flex;
-  justify-content: center;
-  padding: 12px;
-}
-
-#board {
-  width: min(94vw, 420px);
-  border-radius: 18px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-}
-
-/* DIFFICULTY */
-#difficulty-box {
-  margin: 16px;
-}
-
-#difficulty-label {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  margin-bottom: 6px;
-}
-
-input[type="range"] {
-  width: 100%;
-}
+  :root{
+    --bg:#071827; --card:#071827; --accent:#6fc23b; --muted:#9fb1c7;
+    --light:#e7f6fc; --dark:#2f4655;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#020617);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#eaf6ff}
+  .header{padding:14px;text-align:center;font-weight:800;font-size:20px}
+  .coachRow{display:flex;gap:12px;align-items:center;margin:10px auto;max-width:720px;padding:10px;background:rgba(255,255,255,0.02);border-radius:12px}
+  .avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid rgba(127,204,59,0.9)}
+  .coachText{font-size:14px}
+  .center{display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px}
+  .panel{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:12px;border-radius:12px;width:92vw;max-width:520px}
+  .boardWrap{width:92vw;max-width:520px}
+  #board{width:100%;border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,0.6)}
+  .controls{display:flex;gap:8px;align-items:center;margin-top:10px;justify-content:space-between}
+  .btn{padding:10px 14px;border-radius:999px;border:none;background:#1e293b;color:#eaf6ff;cursor:pointer;font-weight:700}
+  .btn.primary{background:var(--accent);color:#052108}
+  .small{color:var(--muted);font-size:13px}
+  .hidden{display:none}
 </style>
 </head>
-
 <body>
 
-<header>Offline Chess Coach</header>
+<div class="header">Offline Chess Coach</div>
 
-<!-- COACH -->
-<div id="coach-card">
-  <img id="coach-avatar"
-       src="./file_0000000db887f6dde52fee7800f79.png"
-       alt="Coach">
-  <div id="coach-text">
+<!-- Coach bar -->
+<div class="coachRow" role="region" aria-label="Coach">
+  <!-- Use exact GitHub filename you uploaded -->
+  <img src="./file_0000000db887f6dde52fee7800f79.png" alt="Coach avatar" class="avatar" id="coachAvatar">
+  <div class="coachText">
     <strong>Coach</strong><br>
-    Welcome. Choose a level, then make your first move.
+    <span id="coachIntro" class="small">Welcome. Pick a level and press <em>Start game</em> to begin.</span>
   </div>
 </div>
 
-<!-- BOARD -->
-<div id="board-wrapper">
-  <div id="board"></div>
-</div>
-
-<!-- DIFFICULTY -->
-<div id="difficulty-box">
-  <div id="difficulty-label">
-    <span>Difficulty</span>
-    <span id="level-text">5 · Intermediate</span>
+<div class="center">
+  <div class="panel">
+    <div><strong>Difficulty</strong> <span id="levelLabel" style="float:right">5 — Intermediate</span></div>
+    <input id="level" type="range" min="1" max="10" value="5" style="width:100%;margin-top:8px">
+    <div class="controls">
+      <button id="startBtn" class="btn primary">Start game</button>
+      <button id="hintBtn" class="btn">Hint</button>
+      <div id="status" class="small">Coach: Ready</div>
+    </div>
   </div>
-  <input type="range" min="1" max="10" value="5" id="level">
+
+  <div class="boardWrap">
+    <div id="board"></div>
+  </div>
 </div>
 
-<!-- LIBRARIES (ORDER MATTERS) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chess.js@0.13.4/chess.min.js"></script>
+<!-- libs -->
+<script src="https://cdn.jsdelivr.net/npm/chess.js@1.0.0/chess.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
 
 <script>
-const game = new Chess();
+/* Simple, robust Play flow:
+   - Board is created on Start to ensure visibility
+   - Coach image uses the exact filename you uploaded
+   - Basic engine: random legal reply (placeholder) — we will replace with Stockfish next
+*/
 
-const levelNames = {
-  1: "Beginner",
-  3: "Novice",
-  5: "Intermediate",
-  7: "Advanced",
-  10: "Master"
-};
+let chess, board;
+const levelNames = {1:'Beginner',3:'Novice',5:'Intermediate',7:'Advanced',10:'Master'};
 
-const levelSlider = document.getElementById("level");
-const levelText = document.getElementById("level-text");
-const coachText = document.getElementById("coach-text");
+const levelInput = document.getElementById('level');
+const levelLabel = document.getElementById('levelLabel');
+const coachIntro = document.getElementById('coachIntro');
+const status = document.getElementById('status');
 
-function updateLevel() {
-  const v = levelSlider.value;
-  let label = "Intermediate";
-  for (const k in levelNames) {
-    if (v >= k) label = levelNames[k];
-  }
-  levelText.textContent = `${v} · ${label}`;
+function updateLevelLabel(){
+  const v = Number(levelInput.value);
+  let label = 'Intermediate';
+  for(const k in levelNames) if(v>=k) label = levelNames[k];
+  levelLabel.textContent = `${v} — ${label}`;
+}
+levelInput.addEventListener('input', updateLevelLabel);
+updateLevelLabel();
+
+function createBoard(){
+  chess = new Chess();
+  board = Chessboard('board', {
+    draggable: true,
+    position: 'start',
+    pieceTheme: 'https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/img/chesspieces/wikipedia/{piece}.png',
+    onDrop: onDrop
+  });
 }
 
-levelSlider.addEventListener("input", updateLevel);
-updateLevel();
+function onDrop(source, target){
+  const move = chess.move({from:source, to:target, promotion:'q'});
+  if(move===null) return 'snapback';
+  status.textContent = 'Coach: Thinking...';
+  setTimeout(botReply, 300);
+}
 
-const board = Chessboard("board", {
-  draggable: true,
-  position: "start",
-  orientation: "white",
-  pieceTheme:
-    "https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/img/chesspieces/wikipedia/{piece}.png",
-  onDrop: onDrop
+function botReply(){
+  const moves = chess.moves();
+  if(!moves || moves.length===0){ status.textContent = 'Coach: No reply (game over?)'; return; }
+  // simple strength scaling: do more random sampling when level higher, still placeholder
+  const sampleCount = Math.max(1, Math.floor(Number(levelInput.value)/3));
+  let best = moves[Math.floor(Math.random()*moves.length)];
+  for(let i=0;i<sampleCount;i++){ best = moves[Math.floor(Math.random()*moves.length)]; }
+  chess.move(best);
+  board.position(chess.fen());
+  status.textContent = 'Coach: Your move.';
+}
+
+/* Start button */
+document.getElementById('startBtn').addEventListener('click', ()=>{
+  // create board if not created yet - ensures visible
+  if(!board) createBoard();
+  coachIntro.textContent = 'Game started. Coach will be silent during play (use Hint for advice).';
+  status.textContent = 'Coach: Your move.';
 });
 
-function onDrop(source, target) {
-  const move = game.move({
-    from: source,
-    to: target,
-    promotion: "q"
-  });
-
-  if (move === null) return "snapback";
-
-  coachText.innerHTML =
-    "<strong>Coach</strong><br>" +
-    "I see your idea. Let’s see how the position develops.";
-}
+/* hint button (simple) */
+document.getElementById('hintBtn').addEventListener('click', ()=>{
+  if(!chess) { status.textContent = 'Start the game first'; return; }
+  // small hint: show legal moves for a random piece of human color (white)
+  const moves = chess.moves({verbose:true});
+  if(!moves.length){ status.textContent = 'No moves available'; return; }
+  // pick a random move for demonstration and show SAN
+  const m = moves[Math.floor(Math.random()*moves.length)];
+  status.textContent = `Hint (example): try ${m.san}`;
+});
 </script>
 
 </body>

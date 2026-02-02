@@ -1,178 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Offline Chess Coach — Play</title>
-
-<!-- Primary css for chessboardjs (most CDNs will serve) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Offline Chess Coach</title>
 
 <style>
-  :root{--bg:#071827;--panel:rgba(255,255,255,0.03);--accent:#3ddc84}
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#020617);font-family:system-ui;color:#eaf6ff}
-  .wrap{max-width:520px;margin:0 auto;padding:18px}
-  h1{text-align:center;margin:8px 0 16px;font-weight:800}
-  .coach-card{display:flex;gap:12px;align-items:center;background:var(--panel);padding:12px;border-radius:12px}
-  .coach-card img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid var(--accent)}
-  .coach-text{font-size:14px}
-  .label{margin-top:16px;font-size:14px}
-  input[type=range]{width:100%;margin-top:8px}
-  .start-btn{margin-top:14px;width:100%;padding:14px;border-radius:999px;border:none;background:var(--accent);color:#04220f;font-weight:700;font-size:16px}
-  #boardWrap{display:none;margin-top:18px;max-width:420px}
-  #board{width:100%;height:380px;border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,.6)}
-  .status{margin-top:10px;color:#9fb1c7}
-  .error{margin-top:10px;color:#ff9b9b}
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: radial-gradient(circle at top, #0f1f2f, #050b12);
+  color: #fff;
+}
+
+h1 {
+  text-align: center;
+  margin: 24px 0 12px;
+}
+
+.panel {
+  max-width: 420px;
+  margin: auto;
+  padding: 16px;
+}
+
+.coach-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.coach-box img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #35d06c;
+}
+
+button {
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 30px;
+  background: #35d06c;
+  color: #000;
+}
+
+#board {
+  display: none;
+  max-width: 360px;
+  margin: 20px auto;
+}
+
+.chessboard {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.square {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  user-select: none;
+}
+
+.dark { background: #4b6a7a; }
+.light { background: #dbe7ef; }
 </style>
 </head>
+
 <body>
-  <div class="wrap">
-    <h1>Offline Chess Coach</h1>
 
-    <div class="coach-card" aria-live="polite">
-      <!-- EXACT filename (do not change) -->
-      <img src="file_00000000d88871fdb6de52fee7800f79.png" alt="Coach">
-      <div class="coach-text">
-        <strong>Coach</strong><br>
-        Welcome. Pick a level and press <strong>Start game</strong>.
-      </div>
-    </div>
+<h1>Offline Chess Coach</h1>
 
-    <div class="label">Difficulty — <span id="levelLabel">5</span></div>
-    <input id="level" type="range" min="1" max="10" value="5">
-
-    <button id="start" class="start-btn">Start game</button>
-
-    <div id="boardWrap">
-      <div id="board"></div>
-      <div class="status" id="status">Coach: Ready.</div>
-      <div class="error" id="errorBox" style="display:none"></div>
+<div class="panel" id="menu">
+  <div class="coach-box">
+    <img src="file_00000000d88871fdb6de52fee7800f79.png" alt="Coach">
+    <div>
+      <strong>Coach</strong><br>
+      Welcome. Pick a level and press <b>Start game</b>.
     </div>
   </div>
 
-  <script>
-  // small helper to load scripts sequentially (tries list until one loads)
-  function loadScriptCandidates(urls, cb) {
-    let i = 0;
-    function tryOne() {
-      if (i >= urls.length) return cb(new Error("All candidates failed"));
-      const url = urls[i++];
-      const s = document.createElement('script');
-      s.src = url;
-      s.onload = () => cb(null, url);
-      s.onerror = () => { s.remove(); tryOne(); };
-      document.head.appendChild(s);
-    }
-    tryOne();
+  <button id="startBtn">Start game</button>
+</div>
+
+<div id="board">
+  <div class="chessboard" id="chessboard"></div>
+</div>
+
+<script>
+const startBtn = document.getElementById("startBtn");
+const menu = document.getElementById("menu");
+const boardWrap = document.getElementById("board");
+const boardEl = document.getElementById("chessboard");
+
+const pieces = [
+  "♜","♞","♝","♛","♚","♝","♞","♜",
+  "♟","♟","♟","♟","♟","♟","♟","♟",
+  "","","","","","","","",
+  "","","","","","","","",
+  "","","","","","","","",
+  "","","","","","","","",
+  "♙","♙","♙","♙","♙","♙","♙","♙",
+  "♖","♘","♗","♕","♔","♗","♘","♖"
+];
+
+function drawBoard() {
+  boardEl.innerHTML = "";
+  for (let i = 0; i < 64; i++) {
+    const sq = document.createElement("div");
+    sq.className = "square " + ((Math.floor(i/8)+i)%2 ? "dark" : "light");
+    sq.textContent = pieces[i];
+    boardEl.appendChild(sq);
   }
+}
 
-  // Candidates for chess.js and chessboardjs (multiple CDNs)
-  const chessJsCandidates = [
-    "https://cdn.jsdelivr.net/npm/chess.js@1.0.0/chess.min.js",
-    "https://unpkg.com/chess.js@1.0.0/chess.min.js",
-    "https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.13.4/chess.min.js"
-  ];
+startBtn.addEventListener("click", () => {
+  menu.style.display = "none";
+  boardWrap.style.display = "block";
+  drawBoard();
+});
+</script>
 
-  const chessboardCandidates = [
-    "https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js",
-    "https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"
-  ];
-
-  const errorBox = document.getElementById('errorBox');
-  const statusEl = document.getElementById('status');
-
-  // Load chess.js first, then chessboardjs
-  loadScriptCandidates(chessJsCandidates, (err1, url1) => {
-    if (err1) {
-      errorBox.style.display = 'block';
-      errorBox.textContent = "Failed to load chess.js from CDN.";
-      return;
-    }
-    // then chessboardjs
-    loadScriptCandidates(chessboardCandidates, (err2, url2) => {
-      if (err2) {
-        errorBox.style.display = 'block';
-        errorBox.textContent = "Failed to load chessboardjs from CDN.";
-        return;
-      }
-      // both libraries loaded -> wire up UI
-      readyToInit();
-    });
-  });
-
-  function readyToInit(){
-    const startBtn = document.getElementById('start');
-    const boardWrap = document.getElementById('boardWrap');
-    const level = document.getElementById('level');
-    const levelLabel = document.getElementById('levelLabel');
-
-    level.addEventListener('input', ()=> levelLabel.textContent = level.value);
-
-    let game = null;
-    let board = null;
-
-    function initBoard(){
-      try {
-        game = new Chess();
-      } catch(e){
-        errorBox.style.display = 'block';
-        errorBox.textContent = 'Error: chess.js failed to initialize: ' + e;
-        return false;
-      }
-
-      try {
-        board = Chessboard('board', {
-          draggable: true,
-          position: 'start',
-          pieceTheme: 'https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/img/chesspieces/wikipedia/{piece}.png',
-          onDragStart: function(source, piece) {
-            if (game.game_over()) return false;
-            if (piece && piece[0] === 'b') return false;
-          },
-          onDrop: function(source, target) {
-            const move = game.move({from: source, to: target, promotion: 'q'});
-            if (move === null) return 'snapback';
-            board.position(game.fen());
-            statusEl.textContent = 'Coach: Thinking...';
-            setTimeout(coachReply, 350);
-          },
-          onSnapEnd: function() { board.position(game.fen()); }
-        });
-      } catch(e){
-        errorBox.style.display = 'block';
-        errorBox.textContent = 'Error: chessboardjs failed to initialize: ' + e;
-        return false;
-      }
-      // safe mobile resize
-      setTimeout(()=>{ try{ board.resize(); } catch(e){} }, 120);
-      return true;
-    }
-
-    function coachReply(){
-      if (!game) return;
-      if (game.game_over()){ statusEl.textContent = 'Coach: Game over.'; return; }
-      const moves = game.moves();
-      if (!moves || moves.length === 0){ statusEl.textContent = 'Coach: No moves.'; return; }
-      const chosen = moves[Math.floor(Math.random() * moves.length)];
-      game.move(chosen);
-      board.position(game.fen());
-      statusEl.textContent = 'Coach: Your move.';
-    }
-
-    startBtn.addEventListener('click', ()=>{
-      boardWrap.style.display = 'block';
-      if (!board) {
-        const ok = initBoard();
-        if (!ok) return;
-      } else {
-        game.reset();
-        board.position('start');
-      }
-      statusEl.textContent = 'Coach: Game started. Your move.';
-      // scroll to board for mobile
-      setTimeout(()=>{ window.scrollTo({ top: document.getElementById('board').offsetTop - 20, behavior: 'smooth' }); }, 120);
-    });
-  }
-  </script>
 </body>
   </html>

@@ -3,77 +3,143 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Offline Chess Coach — Fixed Board</title>
+<title>Offline Chess Coach — Clean</title>
+
 <style>
 :root{
-  --bg:#071226;
-  --card:#071827;
-  --accent:#6fc23b;
-  --muted:#9fb1c7;
-  --light-square:#e7f6fc;
-  --dark-square:#2f4655;
+  --bg:#071827; --bg2:#02101a;
+  --panel:#071827; --bubble:#0b2230;
+  --accent:#6fc23b; --muted:#95b0c6;
+  --light:#e7f6fc; --dark:#2f4655;
 }
-html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#020617);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#eaf6ff}
-.header{padding:16px;text-align:center;font-weight:800;font-size:20px}
-.container{display:flex;flex-direction:column;align-items:center;padding:12px;gap:12px}
-.frame{width:94vw;max-width:520px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:18px;padding:14px;box-shadow:0 20px 40px rgba(0,0,0,0.6)}
-.board{width:100%;aspect-ratio:1/1;display:grid;grid-template-columns:repeat(8,1fr);border-radius:12px;overflow:hidden;border:4px solid rgba(0,0,0,0.08)}
-.square{display:flex;align-items:center;justify-content:center;user-select:none;touch-action:manipulation;position:relative;font-size:calc(12px + 2.8vw)}
-.light{background:linear-gradient(180deg,var(--light-square),#cfeaf7)}
-.dark{background:linear-gradient(180deg,var(--dark-square),#2b4958)}
-.piece{font-size:1.6em;line-height:1; -webkit-font-smoothing:antialiased;text-shadow:0 6px 12px rgba(0,0,0,0.55)}
+html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2));font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#eaf6ff}
+.header{padding:14px;text-align:left;font-weight:800;font-size:20px}
+.container{max-width:760px;margin:0 auto;padding:12px;display:flex;flex-direction:column;gap:12px}
+.coachRow{display:flex;gap:12px;align-items:flex-start;padding:8px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))}
+.avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#fb7185);display:flex;align-items:center;justify-content:center;font-weight:800;color:#061018}
+.coachBubble{flex:1;padding:8px 12px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent)}
+.coachTitle{font-weight:800}
+.coachSmall{color:var(--muted);margin-top:6px;font-size:14px}
+
+/* Board area */
+.boardWrap{display:flex;justify-content:center;margin-top:8px}
+.boardFrame{width:92vw;max-width:520px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:12px;border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,0.6)}
+.board{width:100%;aspect-ratio:1/1;display:grid;grid-template-columns:repeat(8,1fr);border-radius:12px;overflow:hidden;border:6px solid rgba(0,0,0,0.08)}
+.square{display:flex;align-items:center;justify-content:center;user-select:none;touch-action:manipulation;position:relative}
+.light{background:linear-gradient(180deg,var(--light),#cfeaf7)}
+.dark{background:linear-gradient(180deg,var(--dark),#2b4958)}
+.piece{font-size:calc(12px + 3vw);line-height:0.95;-webkit-font-smoothing:antialiased;text-shadow:0 6px 12px rgba(0,0,0,0.55)}
 .white-piece{color:#ffffff}
-.black-piece{color:#071218}
-.controls{display:flex;gap:8px;margin-top:12px;align-items:center}
-.btn{padding:10px 14px;border-radius:999px;border:none;background:#1e293b;color:#eaf6eb;cursor:pointer;font-weight:600}
-.btn.primary{background:var(--accent);color:#04210b}
-.coach{width:94vw;max-width:520px;margin-top:8px;padding:12px;background:var(--card);border-radius:12px}
-.row{display:flex;align-items:center;gap:8px}
-.sliderWrap{width:100%}
-.levelBox{display:flex;gap:10px;align-items:center}
+.black-piece{color:#041118}
+.controls{display:flex;gap:10px;justify-content:center;margin-top:12px}
+.btn{padding:10px 14px;border-radius:999px;border:none;background:#1e293b;color:#eaf6ff;cursor:pointer;font-weight:700}
+.btn.primary{background:var(--accent);color:#02120a}
+
+/* bottom hint bar */
+.hintBar{margin-top:10px;padding:12px;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);border-radius:12px;display:flex;align-items:center;gap:12px}
+.hintText{flex:1;color:var(--muted)}
+
+/* pregame modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:9999}
+.panel{width:min(96vw,600px);background:linear-gradient(180deg,#071827,#03111a);padding:18px;border-radius:12px;box-shadow:0 30px 80px rgba(0,0,0,0.7)}
+.row{display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.label{color:#cfe8f6;font-weight:700;min-width:120px}
+.field{background:#081826;padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);color:#eaf6ff}
+.range{width:100%}
+.legend{display:flex;justify-content:space-between;color:#7ea7c1;font-size:11px;margin-top:8px}
 .small{color:var(--muted);font-size:13px}
-.legend{display:flex;justify-content:space-between;color:#7ea7c1;font-size:11px;margin-top:6px}
-@media(min-width:900px){ .container{padding:24px} .piece{font-size:32px} }
+@media(min-width:900px){.board{max-width:560px}}
 </style>
 </head>
 <body>
-  <div class="header">Play vs Coach</div>
 
-  <div class="container">
-    <div class="frame">
-      <div id="board" class="board" aria-label="Chessboard"></div>
+<div class="header">Offline Chess Coach</div>
 
-      <div class="controls" style="margin-top:12px">
-        <button class="btn" id="resetBtn">Reset</button>
-        <button class="btn primary" id="flipBtn">Flip Board</button>
-        <div style="flex:1"></div>
-        <div class="small" id="statusSmall">Coach: Ready</div>
+<div class="container">
+  <!-- Coach bubble up top (chess.com style) -->
+  <div class="coachRow">
+    <div class="avatar">♛</div>
+    <div class="coachBubble">
+      <div class="coachTitle">Coach</div>
+      <div id="coachIntro" class="coachSmall">Choose level and start — coach will give a short tip at game start if enabled, then stay silent unless you ask a hint.</div>
+    </div>
+  </div>
+
+  <!-- Board -->
+  <div class="boardWrap">
+    <div class="boardFrame">
+      <div id="board" class="board" role="grid" aria-label="Chessboard"></div>
+
+      <div class="controls" style="margin-top:12px;justify-content:center">
+        <button class="btn" id="hintBtn">Hint</button>
+        <button class="btn" id="undoBtn">Undo</button>
+        <button class="btn primary" id="analyseBtn">Analyse (Short)</button>
       </div>
 
-      <div style="margin-top:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-weight:700">Difficulty</div>
-          <div class="levelBox"><div id="levelNum">5</div><div class="small" id="levelWord">Intermediate</div></div>
-        </div>
+      <div class="hintBar" id="hintBar" style="display:none">
+        <div class="hintText" id="hintText"></div>
+        <div class="small" id="statusSmall">Coach: Ready</div>
+      </div>
+    </div>
+  </div>
+</div>
 
-        <div class="sliderWrap" style="margin-top:8px">
-          <input id="difficulty" type="range" min="1" max="10" value="5" style="width:100%">
-          <div class="legend"><span>Beginner</span><span>Novice</span><span>Intermediate</span><span>Advanced</span><span>Master</span></div>
+<!-- PRE-GAME: choose level/side and Start -->
+<div id="preGame" class="modal">
+  <div class="panel">
+    <h3 style="margin:0 0 10px 0">New Game — Setup</h3>
+
+    <div class="row">
+      <div class="label">Side</div>
+      <div class="field">
+        <select id="sideSelect">
+          <option value="white">Play as White</option>
+          <option value="black">Play as Black</option>
+          <option value="random">Random</option>
+        </select>
+      </div>
+
+      <div class="label">Coach speaks at start</div>
+      <div class="field">
+        <select id="speakSelect">
+          <option value="on">Yes — one tip</option>
+          <option value="off">No — silent</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label">Level</div>
+      <div style="flex:1">
+        <input id="levelRange" type="range" min="1" max="10" value="5" class="range"/>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;color:#7ea7c1;font-size:12px">
+          <div>Beginner</div><div>Novice</div><div>Intermediate</div><div>Advanced</div><div>Master</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+          <div><strong id="levelNum">5</strong> <span id="levelWord" class="small">Intermediate</span></div>
+          <div>
+            <button class="btn primary" id="startBtn">Start Game</button>
+          </div>
         </div>
       </div>
     </div>
 
-    <div id="coach" class="coach"><strong>Coach:</strong> <span id="coachText">Welcome — move a piece to begin.</span></div>
+    <div class="small" style="margin-top:8px">You pick level only at the start of the game. Coach will stay silent during play unless you press Hint.</div>
   </div>
+</div>
 
 <script>
-/*
-Self-contained board implementation (no chessboard.js)
-Tries to load chess.js from several CDNs. If not available, plays and validates in a permissive fallback.
-Coach uses chess.js minimax when available; otherwise a random fallback move generator.
+/* Single-file play page, chess.com-like layout.
+   - Replace entire play.html with this file.
+   - Pre-game overlay selects level + side + coach speak at start.
+   - Coach silent during play unless Hint clicked.
+   - Uses chess.js if available; fallback allowed.
 */
 
+/* minimal unicode pieces mapping */
 const PIECES = { r:'♜', n:'♞', b:'♝', q:'♛', k:'♚', p:'♟', R:'♖', N:'♘', B:'♗', Q:'♕', K:'♔', P:'♙' };
+
+/* starting position array: 0..63 */
 let pos = [
  'r','n','b','q','k','b','n','r',
  'p','p','p','p','p','p','p','p',
@@ -84,21 +150,32 @@ let pos = [
  'P','P','P','P','P','P','P','P',
  'R','N','B','Q','K','B','N','R'
 ];
-let flipped=false, selected=null, lastMove={from:null,to:null};
-let ChessJS=null, chessGame=null;
-let difficultyVal = 5;
 
-/* DOM */
+let flipped=false, selected=null, lastMove={from:null,to:null};
+let humanColor='w', botColor='b';
+let chessReady=false, ChessJS=null, chessGame=null;
+let level=5, coachSpeak=true;
+let gameStarted=false;
+
 const boardEl = document.getElementById('board');
-const coachText = document.getElementById('coachText');
-const statusSmall = document.getElementById('statusSmall');
+const preGame = document.getElementById('preGame');
+const levelRange = document.getElementById('levelRange');
 const levelNum = document.getElementById('levelNum');
 const levelWord = document.getElementById('levelWord');
-const difficultyInput = document.getElementById('difficulty');
+const startBtn = document.getElementById('startBtn');
+const sideSelect = document.getElementById('sideSelect');
+const speakSelect = document.getElementById('speakSelect');
+const statusSmall = document.getElementById('statusSmall');
+const hintBar = document.getElementById('hintBar');
+const hintText = document.getElementById('hintText');
 
-function coachSay(t){ coachText.textContent = t; statusSmall.textContent = 'Coach: ' + t; }
+/* helpers */
+function idxToAlg(i){ return String.fromCharCode(97 + (i%8)) + (8 - Math.floor(i/8)); }
+function algToIdx(a){ return (8 - Number(a[1]))*8 + (a.charCodeAt(0)-97); }
+function pieceColor(p){ if(!p) return null; return p === p.toUpperCase() ? 'w' : 'b'; }
+function coachSay(t){ document.getElementById('coachIntro').textContent = t; statusSmall.textContent = 'Coach: ' + t; }
 
-/* draw board grid and pieces */
+/* draw board */
 function drawBoard(){
   boardEl.innerHTML = '';
   const idxs = [...Array(64).keys()];
@@ -106,203 +183,151 @@ function drawBoard(){
   for(const idx of idxs){
     const r = Math.floor(idx/8), c = idx%8;
     const sq = document.createElement('div');
-    sq.className = 'square ' + (((r+c)%2)?'dark':'light');
+    sq.className = 'square ' + (((r+c)%2) ? 'dark' : 'light');
     sq.dataset.idx = idx;
     const p = pos[idx];
     if(p){
       const el = document.createElement('div');
-      el.className = 'piece ' + (p===p.toUpperCase()?'white-piece':'black-piece');
+      el.className = 'piece ' + (p===p.toUpperCase() ? 'white-piece' : 'black-piece');
       el.textContent = PIECES[p] || '?';
       sq.appendChild(el);
     }
-    if(selected === idx) sq.style.outline = '4px solid rgba(111,194,59,0.4)';
+    if(selected === idx) sq.style.outline = '4px solid rgba(111,194,59,0.36)';
     if(lastMove.from === idx || lastMove.to === idx) sq.style.boxShadow = 'inset 0 0 0 4px rgba(111,194,59,0.06)';
     sq.addEventListener('click', ()=>onSquareClick(Number(sq.dataset.idx)));
     boardEl.appendChild(sq);
   }
 }
 
-/* click handling */
+/* click handler */
 function onSquareClick(idx){
-  if(!gameRunning){ // game always running here - so allow moves
-    coachSay('Game ready — make a move.');
-  }
+  if(!gameStarted){ coachSay('Start a game from the overlay.'); return; }
   if(selected === null){
-    if(!pos[idx]){ coachSay('Tap a piece first.'); return; }
-    selected = idx; drawBoard(); coachSay('Selected ' + idxToAlg(idx)); return;
+    if(!pos[idx] || pieceColor(pos[idx]) !== humanColor){ coachSay('Tap one of your pieces.'); return; }
+    selected = idx; drawBoard(); return;
   }
-  if(selected === idx){ selected = null; drawBoard(); coachSay('Selection cleared.'); return; }
-  // attempt move through chess.js if present
+  if(selected === idx){ selected = null; drawBoard(); return; }
   const fromAlg = idxToAlg(selected), toAlg = idxToAlg(idx);
-  if(ChessJSisReady()){
-    const move = chessGame.move({from:fromAlg, to:toAlg, promotion:'q'});
-    if(move===null){ coachSay('Illegal move — try another.'); return; }
-    syncFromChessJS(); lastMove={from:selected,to:idx}; selected=null; drawBoard(); coachSay('You: ' + move.san);
-    setTimeout(()=>botRespond(), 400);
+  if(chessReady){
+    const move = chessGame.move({ from: fromAlg, to: toAlg, promotion:'q' });
+    if(move === null){ coachSay('Illegal move.'); return; }
+    syncFromChessJS(); lastMove={from:selected,to:idx}; selected = null; drawBoard(); coachSay('You: '+move.san);
+    setTimeout(()=>botPlay(), 350);
   } else {
-    // permissive fallback: only allow capturing or empty target
-    if(pos[idx] && pieceColor(pos[idx]) === pieceColor(pos[selected])){ coachSay('Cannot capture your own piece.'); return; }
-    pos[idx] = pos[selected]; pos[selected] = ''; lastMove={from:selected,to:idx}; selected=null; drawBoard(); coachSay('You moved ' + fromAlg + '→' + toAlg);
-    setTimeout(()=>botRespond(), 400);
+    if(pos[idx] && pieceColor(pos[idx])===pieceColor(pos[selected])){ coachSay('Cannot capture your own piece.'); return; }
+    pos[idx] = pos[selected]; pos[selected] = ''; lastMove={from:selected,to:idx}; selected=null; drawBoard(); coachSay('You moved '+fromAlg+'→'+toAlg);
+    setTimeout(()=>botPlay(),350);
   }
 }
 
-function idxToAlg(i){ return String.fromCharCode(97 + (i%8)) + (8 - Math.floor(i/8)); }
-function algToIdx(a){ return (8 - Number(a[1]))*8 + (a.charCodeAt(0)-97); }
-function pieceColor(p){ if(!p) return null; return p===p.toUpperCase() ? 'w' : 'b'; }
-
-/* sync from chess.js fen */
-function syncFromChessJS(){
-  if(!ChessJSisReady()) return;
-  const fen = chessGame.fen();
-  const rows = fen.split(' ')[0].split('/');
-  const newPos = [];
-  for(const row of rows){
-    for(const ch of row){
-      if(isFinite(ch)){ for(let i=0;i<Number(ch);i++) newPos.push(''); }
-      else newPos.push(ch);
-    }
-  }
-  pos = newPos;
-}
-
-/* Chess.js load attempts */
+/* try load chess.js for legal move checking */
 async function tryLoadChessJS(){
-  const cands = [
+  const candidates = [
     'https://unpkg.com/chess.js@1.0.0/chess.min.js',
     'https://cdn.jsdelivr.net/npm/chess.js@1.0.0/chess.min.js',
     'https://cdn.jsdelivr.net/npm/chess.js@0.13.4/chess.min.js'
   ];
-  for(const u of cands){
-    try{
-      await loadScript(u);
-      if(typeof Chess === 'function' || typeof Chess === 'object'){
-        ChessJS = Chess;
-        chessGame = new ChessJS();
-        coachSay('Loaded chess.js — legal move validation ON');
-        syncFromChessJS();
-        drawBoard();
-        return true;
-      }
-    }catch(e){ console.warn('chess.js failed load', u); }
+  for(const u of candidates){
+    try{ await loadScript(u); if(typeof Chess === 'function' || typeof Chess === 'object'){ ChessJS = Chess; chessGame = new ChessJS(); syncFromChessJS(); chessReady = true; coachSay('Validation active (chess.js).'); return true; } }catch(e){ console.warn('chess load failed',u); }
   }
-  coachSay('chess.js not available — fallback mode enabled');
+  coachSay('Validation not available — fallback moves only.');
   return false;
 }
+function loadScript(url){ return new Promise((resolve,reject)=>{ const s=document.createElement('script'); s.src=url; s.onload=()=>resolve(true); s.onerror=()=>reject(false); document.head.appendChild(s); });}
+function syncFromChessJS(){ if(!chessReady) return; const fen = chessGame.fen(); const rows = fen.split(' ')[0].split('/'); const newPos=[]; for(const row of rows){ for(const ch of row){ if(isFinite(ch)){ for(let i=0;i<Number(ch);i++) newPos.push(''); } else newPos.push(ch); } } pos = newPos; }
 
-function loadScript(url){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=url; s.onload=()=>res(url); s.onerror=()=>rej(url); document.head.appendChild(s); });}
-function ChessJSisReady(){ return !!chessGame && !!ChessJS; }
-
-/* bot response: use chess.js minimax if available, else random fallback */
-async function botRespond(){
-  // if chess.js ready, ensure it's bot's turn
-  if(ChessJSisReady()){
-    const turn = chessGame.turn();
-    // pick a move using shallow search based on difficulty
-    const move = computeBestMoveJS(difficultyVal);
-    if(move){
-      chessGame.move(move);
-      syncFromChessJS();
-      lastMove = { from: algToIdx(move.from), to: algToIdx(move.to) };
-      drawBoard();
-      coachSay('Coach: ' + (move.san || (move.from + '→' + move.to)));
-      return;
-    } else { coachSay('Coach: no legal moves'); return; }
+/* BOT behavior */
+function botPlay(){
+  // if chess.js present, pick best move via shallow search
+  if(chessReady){
+    const move = computeBestMoveJS(level);
+    if(move){ chessGame.move(move); syncFromChessJS(); lastMove = { from: algToIdx(move.from), to: algToIdx(move.to) }; drawBoard(); coachSay('Coach moved.'); return; }
+    coachSay('Coach has no moves.');
+    return;
   }
   // fallback random move
   const m = randomFallbackMove();
-  if(m){
-    pos[m.to] = pos[m.from]; pos[m.from] = ''; lastMove = { from:m.from, to:m.to }; drawBoard(); coachSay('Coach moved.');
-  } else coachSay('Coach cannot move.');
+  if(m){ pos[m.to] = pos[m.from]; pos[m.from] = ''; lastMove={from:m.from,to:m.to}; drawBoard(); coachSay('Coach moved.'); }
+  else coachSay('Coach cannot move.');
 }
 
-/* computeBestMoveJS simple minimax (same pattern as earlier) */
+/* computeBestMoveJS (simple negamax) */
 function computeBestMoveJS(diff){
-  if(!ChessJSisReady()) return null;
-  const moves = chessGame.moves({verbose:true});
+  const moves = chessGame.moves({ verbose:true });
   if(!moves || moves.length===0) return null;
-  let depth = diff<=3?0:(diff<=6?1:(diff<=8?2:3));
+  let depth = diff<=2?0:(diff<=4?1:(diff<=7?2:3));
   if(depth===0) return randomChoice(moves);
   let best=null, bestScore=-Infinity;
   for(const m of moves){
     chessGame.move({from:m.from,to:m.to,promotion:m.promotion||'q'});
-    const score = -negamax(chessGame, depth-1, -Infinity, Infinity);
+    const sc = -negamax(chessGame, depth-1, -Infinity, Infinity);
     chessGame.undo();
-    if(score>bestScore){ bestScore=score; best=m; }
+    if(sc>bestScore){ bestScore=sc; best=m; }
   }
   return best;
 }
-function negamax(g,d,alpha,beta){ if(d===0) return evaluateMaterial(g); const moves=g.moves({verbose:true}); if(!moves.length) return g.in_check()?-999999:0; let max=-Infinity; for(const m of moves){ g.move({from:m.from,to:m.to,promotion:m.promotion||'q'}); const val=-negamax(g,d-1,-beta,-alpha); g.undo(); if(val>max)max=val; if(val>alpha)alpha=val; if(alpha>=beta)break;} return max;}
-function evaluateMaterial(g){ const vals={p:100,n:320,b:330,r:500,q:900,k:20000}; const bd=g.board(); let s=0; for(let r=0;r<8;r++)for(let c=0;c<8;c++){const sq=bd[r][c]; if(!sq)continue; s+= (sq.color==='w'?1:-1)*(vals[sq.type]||0);} return s;}
+function negamax(g,d,alpha,beta){
+  if(d===0) return evaluateMaterial(g);
+  const mv = g.moves({verbose:true});
+  if(!mv.length) return g.in_check() ? -999999 : 0;
+  let max=-Infinity;
+  for(const m of mv){ g.move({from:m.from,to:m.to,promotion:m.promotion||'q'}); const val=-negamax(g,d-1,-beta,-alpha); g.undo(); if(val>max) max=val; if(val>alpha) alpha=val; if(alpha>=beta) break; }
+  return max;
+}
+function evaluateMaterial(g){ const v={p:100,n:320,b:330,r:500,q:900,k:20000}; const bd=g.board(); let s=0; for(let r=0;r<8;r++)for(let c=0;c<8;c++){ const sq=bd[r][c]; if(!sq) continue; s+=(sq.color==='w'?1:-1)*(v[sq.type]||0);} return s; }
 
-/* fallback random move generator (very permissive) */
+/* fallback random move */
 function randomFallbackMove(){
-  const indices = [];
-  for(let i=0;i<64;i++) if(pos[i] && pieceColor(pos[i])==='b') indices.push(i);
-  const candidates = [];
-  for(const from of indices){
-    for(let to=0;to<64;to++){
-      if(to===from) continue;
-      if(!pos[to] || pieceColor(pos[to])!=='b') candidates.push({from,to});
-    }
-  }
-  if(!candidates.length) return null;
-  return randomChoice(candidates);
+  const indices=[]; for(let i=0;i<64;i++) if(pos[i] && pieceColor(pos[i])==='b') indices.push(i);
+  const cand=[]; for(const f of indices){ for(let t=0;t<64;t++){ if(t===f) continue; if(!pos[t] || pieceColor(pos[t])!=='b') cand.push({from:f,to:t}); } }
+  if(!cand.length) return null; return randomChoice(cand);
 }
-
-/* util */
 function randomChoice(a){ return a[Math.floor(Math.random()*a.length)]; }
-function idxToAlg(i){ return String.fromCharCode(97 + (i%8)) + (8 - Math.floor(i/8)); }
-function algToIdx(a){ return (8 - Number(a[1]))*8 + (a.charCodeAt(0)-97); }
 
-/* UI controls */
-document.getElementById('flipBtn').addEventListener('click', ()=>{ flipped=!flipped; drawBoard(); });
-document.getElementById('resetBtn').addEventListener('click', ()=>{ resetBoard(); });
-difficultyInput.addEventListener('input', (e)=>{ difficultyVal = Number(e.target.value); levelNum.textContent = difficultyVal; levelWord.textContent = difficultyWord(difficultyVal); coachSay('Difficulty set: ' + difficultyVal); });
+/* UI: Start game */
+startBtn.addEventListener('click', async ()=>{
+  const side = sideSelect.value;
+  if(side==='white'){ humanColor='w'; botColor='b'; }
+  else if(side==='black'){ humanColor='b'; botColor='w'; }
+  else { humanColor = Math.random()<0.5 ? 'w' : 'b'; botColor = humanColor==='w'?'b':'w'; }
 
-function levelWord(v){
-  if(v<=2) return 'Beginner';
-  if(v<=4) return 'Novice';
-  if(v<=6) return 'Intermediate';
-  if(v<=8) return 'Advanced';
-  return 'Master';
+  coachSpeak = (speakSelect.value === 'on');
+  level = Number(levelRange.value);
+  levelNum.textContent = level;
+  levelWord.textContent = levelWordFor(level);
+  preGame.style.display = 'none';
+  gameStarted = true;
+  // try to load chess.js
+  tryLoadChessJS().catch(()=>{});
+  if(coachSpeak) coachSay('Tip: develop knights and control the center.');
+  else coachSay('Game started.');
+  drawBoard();
+  if(!isHumanTurn()) setTimeout(()=>botPlay(),400);
+});
+
+/* helpers & UI */
+function isHumanTurn(){
+  if(chessReady) return chessGame.turn() === (humanColor==='w' ? 'w' : 'b');
+  // fallback: white moves first; assume it's white's turn if no moves happened (simpler)
+  // we'll not block moves in fallback
+  return true;
 }
+function levelWordFor(v){ if(v<=2) return 'Beginner'; if(v<=4) return 'Novice'; if(v<=6) return 'Intermediate'; if(v<=8) return 'Advanced'; return 'Master'; }
 
-/* reset */
-function resetBoard(){
-  pos = [
-    'r','n','b','q','k','b','n','r',
-    'p','p','p','p','p','p','p','p',
-    '','','','','','','','',
-    '','','','','','','','',
-    '','','','','','','','',
-    '','','','','','','','',
-    'P','P','P','P','P','P','P','P',
-    'R','N','B','Q','K','B','N','R'
-  ];
-  selected=null; lastMove={from:null,to:null}; drawBoard(); coachSay('Board reset');
-}
+document.getElementById('hintBtn').addEventListener('click', ()=>{ hintBar.style.display='flex'; hintText.textContent = 'Hint: Look for tactics and safe squares for your pieces.'; setTimeout(()=>hintBar.style.display='none',5000); });
+document.getElementById('undoBtn').addEventListener('click', ()=>{ if(chessReady){ chessGame.undo(); drawBoard(); coachSay('Undid last move.'); } else coachSay('Undo unavailable in fallback mode.'); });
+document.getElementById('analyseBtn').addEventListener('click', ()=>{ if(chessReady){ hintBar.style.display='flex'; hintText.textContent='Analysis: material and center control matter; consider piece activity.'; setTimeout(()=>hintBar.style.display='none',6000); } else { hintBar.style.display='flex'; hintText.textContent='No deep analysis available offline; use Hint for simple help.'; setTimeout(()=>hintBar.style.display='none',5000); } });
 
-/* try load chess.js (best-effort but board still works if not) */
-tryLoadChessJS().then(()=>{ drawBoard(); }).catch(()=>{ drawBoard(); });
-
-async function tryLoadChessJS(){
-  const cands = [
-    'https://unpkg.com/chess.js@1.0.0/chess.min.js',
-    'https://cdn.jsdelivr.net/npm/chess.js@1.0.0/chess.min.js',
-    'https://cdn.jsdelivr.net/npm/chess.js@0.13.4/chess.min.js'
-  ];
-  for(const u of cands){
-    try{ await loadScript(u); if(typeof Chess==='function' || typeof Chess==='object'){ ChessJS=Chess; chessGame=new ChessJS(); syncFromChessJS(); coachSay('Loaded chess.js: legal moves available'); return true; } }catch(e){ console.warn('fail',u); }
-  }
-  coachSay('chess.js not loaded — moves will be permissive but board works');
-  return false;
-}
-function loadScript(url){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=url; s.onload=()=>res(true); s.onerror=()=>rej(false); document.head.appendChild(s); });}
+/* initial draw and UI wireups */
+levelRange.addEventListener('input', ()=>{ level = Number(levelRange.value); levelNum.textContent = level; levelWord.textContent = levelWordFor(level); });
+levelNum.textContent = level; levelWord.textContent = levelWordFor(level);
 
 /* initial draw */
 drawBoard();
+coachSay('Welcome — pick level and Start.');
 
+/* export drawBoard for reuse below */
+function drawBoard(){ /* re-declare to ensure closure? already declared above */ }
 </script>
 </body>
   </html>

@@ -20,21 +20,20 @@
       width: 100%;
       max-width: 420px;
       padding: 16px;
-      text-align: center;
     }
 
     h1 {
-      margin: 10px 0 14px;
+      text-align: center;
+      margin-bottom: 14px;
       font-size: 22px;
     }
 
-    /* Coach */
     .coach-box {
       display: flex;
       align-items: center;
       background: rgba(255,255,255,0.06);
       border-radius: 14px;
-      padding: 10px;
+      padding: 12px;
       margin-bottom: 14px;
     }
 
@@ -48,48 +47,48 @@
     }
 
     .coach-text {
-      text-align: left;
       font-size: 13px;
-      opacity: 0.9;
+      line-height: 1.4;
     }
 
-    /* Board */
-    .board-wrapper {
-      display: flex;
-      justify-content: center;
-      margin-top: 14px;
+    .ratings {
+      background: rgba(255,255,255,0.04);
+      border-radius: 14px;
+      padding: 10px;
+      max-height: 320px;
+      overflow-y: auto;
     }
 
-    .board {
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      grid-template-rows: repeat(8, 1fr);
-      width: 320px;
-      height: 320px;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    .rating-item {
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      background: rgba(255,255,255,0.04);
     }
 
-    .square {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 34px;
-      user-select: none;
+    .rating-item.selected {
+      background: #2ecc71;
+      color: #000;
+      font-weight: bold;
     }
 
-    .light { background: #e0e6eb; }
-    .dark  { background: #6b8795; }
-
-    .piece {
+    button {
+      width: 100%;
+      margin-top: 16px;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 30px;
+      background: #2ecc71;
+      color: #000;
       cursor: pointer;
     }
 
-    .selected {
-      outline: 3px solid #2ecc71;
-      outline-offset: -3px;
-      border-radius: 6px;
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
   </style>
 </head>
@@ -98,88 +97,70 @@
   <div class="app">
     <h1>Offline Chess Coach</h1>
 
-    <!-- COACH (VISIBLE & STABLE) -->
     <div class="coach-box">
-      <img src="coach.png" alt="Coach" />
+      <img src="coach.png" alt="Coach">
       <div class="coach-text">
         <strong>Coach</strong><br>
-        Tap a piece, then tap a square to move.
+        Choose your opponent’s rating.
       </div>
     </div>
 
-    <!-- BOARD -->
-    <div class="board-wrapper">
-      <div id="board" class="board"></div>
-    </div>
+    <div class="ratings" id="ratings"></div>
+
+    <button id="startBtn" disabled>Start Game</button>
   </div>
 
   <script>
-    const boardEl = document.getElementById("board");
+    const ratingsData = [
+      { elo: 250, name: "Beginner" },
+      { elo: 400, name: "Beginner" },
+      { elo: 600, name: "Beginner" },
+      { elo: 800, name: "Beginner" },
+      { elo: 1000, name: "Beginner" },
 
-    // Board state (WORKING FOUNDATION)
-    const boardState = [
-      '♜','♞','♝','♛','♚','♝','♞','♜',
-      '♟','♟','♟','♟','♟','♟','♟','♟',
-      '','','','','','','','',
-      '','','','','','','','',
-      '','','','','','','','',
-      '','','','','','','','',
-      '♙','♙','♙','♙','♙','♙','♙','♙',
-      '♖','♘','♗','♕','♔','♗','♘','♖'
+      { elo: 1200, name: "Intermediate" },
+      { elo: 1300, name: "Intermediate" },
+      { elo: 1400, name: "Intermediate" },
+      { elo: 1500, name: "Intermediate" },
+
+      { elo: 1600, name: "Advanced Intermediate" },
+      { elo: 1700, name: "Advanced Intermediate" },
+      { elo: 1800, name: "Advanced Intermediate" },
+      { elo: 1900, name: "Advanced Intermediate" },
+      { elo: 2000, name: "Advanced Intermediate" },
+
+      { elo: 2200, name: "Expert" },
+      { elo: 2500, name: "IM-level" },
+      { elo: 2800, name: "GM-level" },
+      { elo: 3200, name: "Max" }
     ];
 
-    let selectedIndex = null;
+    const ratingsEl = document.getElementById("ratings");
+    const startBtn = document.getElementById("startBtn");
 
-    function renderBoard() {
-      boardEl.innerHTML = "";
+    let selectedRating = null;
 
-      boardState.forEach((piece, index) => {
-        const square = document.createElement("div");
-        square.className =
-          "square " + ((Math.floor(index / 8) + index) % 2 === 0 ? "light" : "dark");
+    ratingsData.forEach(r => {
+      const div = document.createElement("div");
+      div.className = "rating-item";
+      div.textContent = `${r.elo} – ${r.name}`;
 
-        if (piece) {
-          const span = document.createElement("span");
-          span.textContent = piece;
-          span.className = "piece";
+      div.onclick = () => {
+        document.querySelectorAll(".rating-item").forEach(i =>
+          i.classList.remove("selected")
+        );
+        div.classList.add("selected");
+        selectedRating = r.elo;
+        startBtn.disabled = false;
+      };
 
-          if (index === selectedIndex) {
-            span.classList.add("selected");
-          }
+      ratingsEl.appendChild(div);
+    });
 
-          square.appendChild(span);
-        }
-
-        square.addEventListener("click", () => handleTap(index));
-        boardEl.appendChild(square);
-      });
-    }
-
-    function handleTap(index) {
-      // Select piece
-      if (selectedIndex === null) {
-        if (boardState[index] !== "") {
-          selectedIndex = index;
-          renderBoard();
-        }
-        return;
-      }
-
-      // Deselect
-      if (index === selectedIndex) {
-        selectedIndex = null;
-        renderBoard();
-        return;
-      }
-
-      // Move (no rules yet — intentional)
-      boardState[index] = boardState[selectedIndex];
-      boardState[selectedIndex] = "";
-      selectedIndex = null;
-      renderBoard();
-    }
-
-    renderBoard();
+    startBtn.onclick = () => {
+      localStorage.setItem("selectedRating", selectedRating);
+      window.location.href = "play.html";
+    };
   </script>
 </body>
   </html>

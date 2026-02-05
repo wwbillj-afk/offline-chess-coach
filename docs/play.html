@@ -110,11 +110,10 @@
 
 <body>
   <div class="app">
-
     <h1>Offline Chess Coach</h1>
 
     <div class="coach-box">
-      <img src="coach.png" alt="Coach">
+      <img src="file_00000000d88871fdb6de52fee7800f79.png" alt="Coach">
       <div class="coach-text">
         <strong>Coach</strong><br>
         Tap a piece, then tap a square to move it.
@@ -124,11 +123,12 @@
     <div class="board-wrapper">
       <div id="board" class="board"></div>
     </div>
-
   </div>
 
   <script>
     const boardEl = document.getElementById("board");
+
+    const selectedRating = localStorage.getItem("selectedRating");
 
     const boardState = [
       '♜','♞','♝','♛','♚','♝','♞','♜',
@@ -148,14 +148,20 @@
 
       boardState.forEach((piece, index) => {
         const square = document.createElement("div");
-        const isLight = (Math.floor(index / 8) + index) % 2 === 0;
-        square.className = "square " + (isLight ? "light" : "dark");
+        square.className =
+          "square " + ((Math.floor(index / 8) + index) % 2 === 0 ? "light" : "dark");
 
-        if (index === selectedIndex) {
-          square.classList.add("selected");
+        if (piece) {
+          const span = document.createElement("span");
+          span.textContent = piece;
+          span.className = "piece";
+
+          if (index === selectedIndex) {
+            span.classList.add("selected");
+          }
+
+          square.appendChild(span);
         }
-
-        square.textContent = piece;
 
         square.addEventListener("click", () => handleTap(index));
         boardEl.appendChild(square);
@@ -163,31 +169,27 @@
     }
 
     function handleTap(index) {
-      // Select a piece
       if (selectedIndex === null) {
-        if (boardState[index] !== '') {
+        if (boardState[index] !== "") {
           selectedIndex = index;
           renderBoard();
         }
         return;
       }
 
-      // Deselect
       if (index === selectedIndex) {
         selectedIndex = null;
         renderBoard();
         return;
       }
 
-      // Move piece (no rules yet)
       boardState[index] = boardState[selectedIndex];
-      boardState[selectedIndex] = '';
+      boardState[selectedIndex] = "";
       selectedIndex = null;
       renderBoard();
     }
 
     renderBoard();
   </script>
-
 </body>
-  </html>I 
+  </html>

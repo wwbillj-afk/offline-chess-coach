@@ -3,17 +3,19 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Play Chess</title>
+<title>Offline Chess Coach</title>
 
 <style>
+/* ---------- GLOBAL ---------- */
 body {
   margin: 0;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: radial-gradient(circle at top, #0b1d2a, #020a13);
-  color: #fff;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
-  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, #1e3a52 0%, #0b1d2a 55%, #08151f 100%);
+  color: #fff;
 }
 
 .app {
@@ -23,20 +25,26 @@ body {
   box-sizing: border-box;
 }
 
+/* ---------- HEADER ---------- */
 h1 {
   text-align: center;
-  margin-bottom: 12px;
   font-size: 22px;
+  margin: 8px 0 14px;
 }
 
+/* ---------- COACH ---------- */
 .coach-box {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 16px;
+  background: rgba(255,255,255,0.10);
+  backdrop-filter: blur(6px);
+  border-radius: 18px;
   padding: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    0 10px 28px rgba(0,0,0,0.45);
 }
 
 .coach-box img {
@@ -44,78 +52,170 @@ h1 {
   height: 56px;
   border-radius: 50%;
   border: 2px solid #2ecc71;
+  object-fit: cover;
+  flex-shrink: 0;
 }
 
+.coach-text {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* ---------- BOARD WRAPPER ---------- */
+.board-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+/* ---------- GLASS BOARD ---------- */
 .board {
-  width: 92vw;
-  max-width: 360px;
-  aspect-ratio: 1 / 1;
   display: grid;
   grid-template-columns: repeat(8, 1fr);
-  margin: 0 auto;
-  border-radius: 14px;
-  overflow: hidden;
-}
-
-.square {
-  position: relative;
+  width: 100%;
+  max-width: 360px;
   aspect-ratio: 1 / 1;
+  border-radius: 18px;
+  overflow: hidden;
+
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    inset 0 -1px 0 rgba(0,0,0,0.25),
+    0 18px 45px rgba(0,0,0,0.55);
 }
 
-.light { background: #e0e6eb; }
-.dark  { background: #6b8795; }
-
-.piece {
-  position: absolute;
-  inset: 0;
+/* ---------- SQUARES ---------- */
+.square {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 34px;
+  user-select: none;
+}
+
+/* chess.com–style colors */
+.light { background: #dbe4ea; }
+.dark  { background: #6f8fa3; }
+
+/* ---------- PIECES ---------- */
+.piece {
+  font-size: 32px;               /* slightly smaller than square */
+  cursor: pointer;
+  transform: translateY(-1px);   /* optical centering */
+
+  /* silver / graphite look */
+  color: #e8edf2;
+  text-shadow:
+    0 1px 0 rgba(255,255,255,0.65),
+    0 -1px 0 rgba(0,0,0,0.35),
+    0 2px 4px rgba(0,0,0,0.45);
+}
+
+/* dark pieces */
+.piece.black {
+  color: #2b2f33;
+  text-shadow:
+    0 1px 0 rgba(255,255,255,0.15),
+    0 -1px 0 rgba(0,0,0,0.6),
+    0 2px 4px rgba(0,0,0,0.6);
+}
+
+/* ---------- SELECTION ---------- */
+.selected {
+  outline: 3px solid #2ecc71;
+  outline-offset: -3px;
 }
 </style>
 </head>
 
 <body>
 <div class="app">
-  <h1>Offline Chess Coach</h1>
 
-  <div class="coach-box">
-    <img src="file_00000000d88871fdb6de52fee7800f79.png">
-    <div><strong>Coach</strong><br>Tap to move.</div>
+<h1>Offline Chess Coach</h1>
+
+<div class="coach-box">
+  <img src="file_00000000d88871fdb6de52fee7800f79.png" alt="Coach">
+  <div class="coach-text">
+    <strong>Coach</strong><br>
+    Tap a piece, then tap a square to move it.
   </div>
+</div>
 
+<div class="board-wrapper">
   <div id="board" class="board"></div>
+</div>
+
 </div>
 
 <script>
 const boardEl = document.getElementById("board");
+
 const boardState = [
-'♜','♞','♝','♛','♚','♝','♞','♜',
-'♟','♟','♟','♟','♟','♟','♟','♟',
-'','','','','','','','',
-'','','','','','','','',
-'','','','','','','','',
-'','','','','','','','',
-'♙','♙','♙','♙','♙','♙','♙','♙',
-'♖','♘','♗','♕','♔','♗','♘','♖'
+  '♜','♞','♝','♛','♚','♝','♞','♜',
+  '♟','♟','♟','♟','♟','♟','♟','♟',
+  '','','','','','','','',
+  '','','','','','','','',
+  '','','','','','','','',
+  '','','','','','','','',
+  '♙','♙','♙','♙','♙','♙','♙','♙',
+  '♖','♘','♗','♕','♔','♗','♘','♖'
 ];
 
-function render() {
+let selectedIndex = null;
+
+function isBlackPiece(piece) {
+  return '♜♞♝♛♚♟'.includes(piece);
+}
+
+function renderBoard() {
   boardEl.innerHTML = "";
-  boardState.forEach((p,i)=>{
-    const sq=document.createElement("div");
-    sq.className="square "+(((Math.floor(i/8)+i)%2===0)?"light":"dark");
-    if(p){
-      const span=document.createElement("span");
-      span.className="piece";
-      span.textContent=p;
-      sq.appendChild(span);
+
+  boardState.forEach((piece, index) => {
+    const square = document.createElement("div");
+    const isLight = (Math.floor(index / 8) + index) % 2 === 0;
+    square.className = "square " + (isLight ? "light" : "dark");
+
+    if (piece) {
+      const span = document.createElement("span");
+      span.textContent = piece;
+      span.className = "piece" + (isBlackPiece(piece) ? " black" : "");
+
+      if (index === selectedIndex) {
+        span.classList.add("selected");
+      }
+
+      square.appendChild(span);
     }
-    boardEl.appendChild(sq);
+
+    square.addEventListener("click", () => handleTap(index));
+    boardEl.appendChild(square);
   });
 }
-render();
+
+function handleTap(index) {
+  if (selectedIndex === null) {
+    if (boardState[index] !== "") {
+      selectedIndex = index;
+      renderBoard();
+    }
+    return;
+  }
+
+  if (index === selectedIndex) {
+    selectedIndex = null;
+    renderBoard();
+    return;
+  }
+
+  boardState[index] = boardState[selectedIndex];
+  boardState[selectedIndex] = "";
+  selectedIndex = null;
+  renderBoard();
+}
+
+renderBoard();
 </script>
+
 </body>
   </html>

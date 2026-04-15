@@ -36,7 +36,7 @@ function initGame() {
     enPassantTarget = null;
     halfMoveClock = 0;
     fullMoveNumber = 1;
-    renderBoard();
+    // renderBoard(); // Will be called by play.html
     updateStatus();
 }
 
@@ -558,46 +558,7 @@ function evaluateBoard(boardState, rating) {
     return score;
 }
 
-function renderBoard() {
-    const boardContainer = document.getElementById('chess-board');
-    boardContainer.innerHTML = '';
 
-    for (let i = 0; i < 64; i++) {
-        const square = document.createElement('div');
-        square.classList.add('square');
-        const coords = getSquareCoords(i);
-        if ((coords.row + coords.col) % 2 === 0) {
-            square.classList.add('light');
-        } else {
-            square.classList.add('dark');
-        }
-
-        if (selectedSquare === i) {
-            square.style.backgroundColor = '#8bc34a'; // Highlight selected
-        } else if (legalMoves.includes(i)) {
-            const dot = document.createElement('div');
-            dot.style.width = '20px';
-            dot.style.height = '20px';
-            dot.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
-            dot.style.borderRadius = '50%';
-            square.appendChild(dot);
-        }
-
-        const piece = board[i];
-        if (piece) {
-            const pieceEl = document.createElement('div');
-            pieceEl.classList.add('piece');
-            pieceEl.textContent = PIECES[piece];
-            pieceEl.style.fontSize = '40px';
-            pieceEl.style.color = getPieceColor(piece) === 'w' ? '#fff' : '#000';
-            pieceEl.style.textShadow = getPieceColor(piece) === 'w' ? '0 1px 2px #000' : '0 1px 2px #fff';
-            square.appendChild(pieceEl);
-        }
-
-        square.addEventListener('click', () => handleSquareClick(i));
-        boardContainer.appendChild(square);
-    }
-}
 
 function updateStatus() {
     const statusEl = document.getElementById(\'game-status\');
@@ -629,7 +590,3 @@ function updateStatus() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    initGame();
-    document.getElementById('new-game-btn').addEventListener('click', initGame);
-});

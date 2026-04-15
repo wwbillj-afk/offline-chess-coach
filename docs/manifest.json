@@ -1,0 +1,21 @@
+{
+    "name": "Offline Chess Coach",
+    "short_name": "Chess Coach",
+    "description": "Your personal offline chess coach.",
+    "start_url": "/offline-chess-coach/docs/index.html",
+    "display": "standalone",
+    "background_color": "#1a1a1a",
+    "theme_color": "#1a1a1a",
+    "icons": [
+        {
+            "src": "coach.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "coach.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

@@ -58,6 +58,16 @@
       border-radius: 8px;
       font-size: 0.9rem;
     }
+
+    button:hover:not(:disabled) {
+      background: #334155;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 
@@ -80,31 +90,33 @@
   <script>
     const game = new Chess();
 
-    const board = Chessboard("board", {
+    const board = new ChessBoard('board', {
       draggable: true,
-      position: "start",
-      onDrop: (source, target) => {
+      position: 'start',
+      onDrop: function(source, target) {
         const move = game.move({
           from: source,
           to: target,
-          promotion: "q"
+          promotion: 'q'
         });
 
-        if (move === null) return "snapback";
+        if (move === null) return 'snapback';
 
         addCoachMessage(
           `Move played: <strong>${move.san}</strong>`
         );
+
+        return true;
       }
     });
 
     function addCoachMessage(text) {
-      const coach = document.getElementById("coach");
-      const p = document.createElement("p");
+      const coach = document.getElementById('coach');
+      const p = document.createElement('p');
       p.innerHTML = `<strong>Coach:</strong> ${text}`;
       coach.appendChild(p);
       coach.scrollTop = coach.scrollHeight;
     }
   </script>
 </body>
-    </html>
+</html>

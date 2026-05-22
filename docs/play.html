@@ -6,6 +6,7 @@
     <title>Play Chess</title>
 
     <style>
+
         body {
             margin: 0;
             font-family: Arial, sans-serif;
@@ -75,6 +76,11 @@
             width: 80%;
             height: 80%;
             cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 34px;
+            user-select: none;
         }
 
         .game-status {
@@ -96,13 +102,16 @@
         .controls button:hover {
             background: #45a049;
         }
+
     </style>
+
 </head>
 
 <body>
 
     <div class="header">
         <img src="coach.png" class="coach-avatar">
+
         <div class="speech-bubble" id="coach-feedback">
             Welcome! Let's play some chess.
         </div>
@@ -116,12 +125,14 @@
 
     <div class="controls">
         <button id="new-game-btn">New Game</button>
+
         <button onclick="location.href='index.html'">
             Back to Home
         </button>
     </div>
 
     <script>
+
         const SVG_PIECES = {
 
             'P': '♙',
@@ -138,16 +149,24 @@
             'q': '♛',
             'k': '♚'
         };
+
     </script>
 
+    <!-- CHESS ENGINE -->
+    <script src="chess.min.js"></script>
+
+    <!-- YOUR GAME CODE -->
     <script src="chess.js"></script>
 
     <script>
 
         window.addEventListener('load', () => {
 
-            const boardContainer = document.getElementById('chess-board');
-            const newGameBtn = document.getElementById('new-game-btn');
+            const boardContainer =
+                document.getElementById('chess-board');
+
+            const newGameBtn =
+                document.getElementById('new-game-btn');
 
             window.renderBoard = function () {
 
@@ -155,7 +174,9 @@
 
                 for (let i = 0; i < 64; i++) {
 
-                    const square = document.createElement('div');
+                    const square =
+                        document.createElement('div');
+
                     square.classList.add('square');
 
                     const row = Math.floor(i / 8);
@@ -171,13 +192,13 @@
 
                     if (piece) {
 
-                        const pieceEl = document.createElement('div');
+                        const pieceEl =
+                            document.createElement('div');
 
                         pieceEl.classList.add('piece-svg');
 
-                        pieceEl.innerHTML = SVG_PIECES[piece];
-
-                        pieceEl.style.fontSize = '32px';
+                        pieceEl.innerHTML =
+                            SVG_PIECES[piece];
 
                         square.appendChild(pieceEl);
                     }
@@ -196,17 +217,17 @@
 
             if ('serviceWorker' in navigator) {
 
-                navigator.serviceWorker.register('./sw.js')
+                navigator.serviceWorker
+                    .register('./sw.js')
                     .then(() => {
-                        console.log('Service Worker Registered');
+                        console.log(
+                            'Service Worker Registered'
+                        );
                     });
-
             }
-
         });
 
     </script>
 
 </body>
 </html>
-```

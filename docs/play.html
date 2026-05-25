@@ -1,37 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
     <title>Offline Chess Coach</title>
 
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet"
+          href="css/style.css" />
 </head>
 
 <body>
 
     <div class="header">
-        <img src="coach.png" class="coach-avatar" />
 
-        <div class="speech-bubble" id="coach-feedback">
+        <img src="coach.png"
+             class="coach-avatar" />
+
+        <div class="speech-bubble"
+             id="coach-feedback">
+
             Welcome! Let's play some chess.
+
         </div>
+
     </div>
 
-    <div class="game-status" id="game-status">
+    <div class="game-status"
+         id="game-status">
+
         White to move
+
     </div>
 
-    <div class="board-container" id="board"></div>
+    <div class="board-container"
+         id="board"></div>
 
     <div class="controls">
 
         <button onclick="startGame()">
+
             New Game
+
         </button>
 
         <button onclick="location.href='index.html'">
+
             Back to Home
+
         </button>
 
     </div>
@@ -39,4 +58,5 @@
     <script src="js/game.js"></script>
 
 </body>
+
 </html>

@@ -5,113 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Offline Chess Coach</title>
 
-    <style>
-        body {
-            margin: 0;
-            padding: 20px;
-            background: #121212;
-            color: white;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            box-sizing: border-box;
-        }
-
-        .header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            width: 100%;
-            max-width: 420px;
-        }
-
-        .coach-avatar {
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            border: 3px solid #4CAF50;
-            object-fit: cover;
-        }
-
-        .speech-bubble {
-            background: #2b2b2b;
-            padding: 14px;
-            border-radius: 14px;
-            flex: 1;
-            font-size: 15px;
-        }
-
-        .game-status {
-            margin-bottom: 20px;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .board-container {
-            width: 100%;
-            max-width: 420px;
-            aspect-ratio: 1;
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 0 25px rgba(0,0,0,0.6);
-        }
-
-        .square {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 42px;
-            user-select: none;
-        }
-
-        .light {
-            background: #dbe4ea;
-        }
-
-        .dark {
-            background: #6f8fa3;
-        }
-
-        .selected {
-            background: #f6f669 !important;
-        }
-
-        .piece {
-            cursor: pointer;
-        }
-
-        .controls {
-            margin-top: 25px;
-            display: flex;
-            gap: 15px;
-        }
-
-        button {
-            padding: 12px 22px;
-            border: none;
-            border-radius: 10px;
-            background: #4CAF50;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        button:hover {
-            background: #45a049;
-        }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
     <div class="header">
         <img src="coach.png" class="coach-avatar" />
+
         <div class="speech-bubble" id="coach-feedback">
             Welcome! Let's play some chess.
         </div>
@@ -124,174 +25,18 @@
     <div class="board-container" id="board"></div>
 
     <div class="controls">
-        <button onclick="startGame()">New Game</button>
+
+        <button onclick="startGame()">
+            New Game
+        </button>
 
         <button onclick="location.href='index.html'">
             Back to Home
         </button>
+
     </div>
 
-    <script>
-
-        const pieces = {
-            r: "♜",
-            n: "♞",
-            b: "♝",
-            q: "♛",
-            k: "♚",
-            p: "♟",
-
-            R: "♖",
-            N: "♘",
-            B: "♗",
-            Q: "♕",
-            K: "♔",
-            P: "♙"
-        };
-
-        let board = [];
-        let selectedSquare = null;
-        let currentPlayer = "white";
-
-        function startGame() {
-
-            board = [
-
-                ["r","n","b","q","k","b","n","r"],
-                ["p","p","p","p","p","p","p","p"],
-                ["","","","","","","",""],
-                ["","","","","","","",""],
-                ["","","","","","","",""],
-                ["","","","","","","",""],
-                ["P","P","P","P","P","P","P","P"],
-                ["R","N","B","Q","K","B","N","R"]
-
-            ];
-
-            currentPlayer = "white";
-
-            document.getElementById("coach-feedback").innerText =
-                "Game started. White moves first.";
-
-            renderBoard();
-        }
-
-        function renderBoard() {
-
-            const boardElement = document.getElementById("board");
-
-            boardElement.innerHTML = "";
-
-            for (let row = 0; row < 8; row++) {
-
-                for (let col = 0; col < 8; col++) {
-
-                    const square = document.createElement("div");
-
-                    square.classList.add("square");
-
-                    if ((row + col) % 2 === 0) {
-                        square.classList.add("light");
-                    } else {
-                        square.classList.add("dark");
-                    }
-
-                    if (
-                        selectedSquare &&
-                        selectedSquare.row === row &&
-                        selectedSquare.col === col
-                    ) {
-                        square.classList.add("selected");
-                    }
-
-                    const piece = board[row][col];
-
-                    if (piece !== "") {
-
-                        const pieceElement =
-                            document.createElement("div");
-
-                        pieceElement.classList.add("piece");
-
-                        pieceElement.innerText = pieces[piece];
-
-                        square.appendChild(pieceElement);
-                    }
-
-                    square.addEventListener("click", () => {
-                        handleClick(row, col);
-                    });
-
-                    boardElement.appendChild(square);
-                }
-            }
-
-            document.getElementById("game-status").innerText =
-                currentPlayer.charAt(0).toUpperCase() +
-                currentPlayer.slice(1) +
-                " to move";
-        }
-
-        function handleClick(row, col) {
-
-            const clickedPiece = board[row][col];
-
-            if (!selectedSquare) {
-
-                if (clickedPiece === "") return;
-
-                const isWhite =
-                    clickedPiece === clickedPiece.toUpperCase();
-
-                if (
-                    (currentPlayer === "white" && !isWhite) ||
-                    (currentPlayer === "black" && isWhite)
-                ) {
-                    return;
-                }
-
-                selectedSquare = { row, col };
-
-                renderBoard();
-
-                return;
-            }
-
-            const fromRow = selectedSquare.row;
-            const fromCol = selectedSquare.col;
-
-            const movingPiece = board[fromRow][fromCol];
-
-            board[row][col] = movingPiece;
-
-            board[fromRow][fromCol] = "";
-
-            selectedSquare = null;
-
-            currentPlayer =
-                currentPlayer === "white"
-                    ? "black"
-                    : "white";
-
-            document.getElementById("coach-feedback").innerText =
-                "Move played.";
-
-            renderBoard();
-        }
-
-        startGame();
-
-        if ("serviceWorker" in navigator) {
-
-            navigator.serviceWorker
-                .register("./sw.js")
-                .then(() => {
-                    console.log("Service Worker Registered");
-                });
-
-        }
-
-    </script>
+    <script src="js/game.js"></script>
 
 </body>
 </html>

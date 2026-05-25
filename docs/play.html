@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8" />
 
     <meta name="viewport"
@@ -11,47 +12,52 @@
 
     <link rel="stylesheet"
           href="css/style.css" />
+
 </head>
 
 <body>
 
-    <div class="header">
+    <div class="app-container">
 
-        <img src="coach.png"
-             class="coach-avatar" />
+        <div class="header">
 
-        <div class="speech-bubble"
-             id="coach-feedback">
+            <img src="coach.png"
+                 class="coach-avatar" />
 
-            Welcome! Let's play some chess.
+            <div class="speech-bubble"
+                 id="coach-feedback">
+
+                Welcome! Let's play some chess.
+
+            </div>
 
         </div>
 
-    </div>
+        <div class="game-status"
+             id="game-status">
 
-    <div class="game-status"
-         id="game-status">
+            White to move
 
-        White to move
+        </div>
 
-    </div>
+        <div class="board-container"
+             id="board"></div>
 
-    <div class="board-container"
-         id="board"></div>
+        <div class="controls">
 
-    <div class="controls">
+            <button onclick="startGame()">
 
-        <button onclick="startGame()">
+                New Game
 
-            New Game
+            </button>
 
-        </button>
+            <button onclick="location.href='index.html'">
 
-        <button onclick="location.href='index.html'">
+                Back to Home
 
-            Back to Home
+            </button>
 
-        </button>
+        </div>
 
     </div>
 

@@ -1,17 +1,18 @@
 const pieces = {
-    r: "♜",
-    n: "♞",
-    b: "♝",
-    q: "♛",
-    k: "♚",
-    p: "♟",
 
-    R: "♖",
-    N: "♘",
-    B: "♗",
-    Q: "♕",
-    K: "♔",
-    P: "♙"
+    r: "pieces/br.png",
+    n: "pieces/bn.png",
+    b: "pieces/bb.png",
+    q: "pieces/bq.png",
+    k: "pieces/bk.png",
+    p: "pieces/bp.png",
+
+    R: "pieces/wr.png",
+    N: "pieces/wn.png",
+    B: "pieces/wb.png",
+    Q: "pieces/wq.png",
+    K: "pieces/wk.png",
+    P: "pieces/wp.png"
 };
 
 let board = [];
@@ -74,11 +75,11 @@ function renderBoard() {
             if (piece !== "") {
 
                 const pieceElement =
-                    document.createElement("div");
+                    document.createElement("img");
 
                 pieceElement.classList.add("piece");
 
-                pieceElement.innerText = pieces[piece];
+                pieceElement.src = pieces[piece];
 
                 square.appendChild(pieceElement);
             }

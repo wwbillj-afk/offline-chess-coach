@@ -1,33 +1,49 @@
 body {
     margin: 0;
-    padding: 8px 20px;
     background: #121212;
     color: white;
     font-family: Arial, sans-serif;
 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
     min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+
+    padding: 10px;
+
     box-sizing: border-box;
 }
 
-.header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    margin-top: 4px;
-    margin-bottom: 8px;
+/* MAIN APP WRAPPER */
+.app-container {
 
     width: 100%;
-    max-width: 430px;
+    max-width: 1100px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* HEADER */
+.header {
+
+    width: 100%;
+    max-width: 900px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 15px;
+
+    margin-bottom: 10px;
 }
 
 .coach-avatar {
-    width: 58px;
-    height: 58px;
+
+    width: 70px;
+    height: 70px;
 
     border-radius: 50%;
     border: 3px solid #4CAF50;
@@ -36,47 +52,54 @@ body {
 }
 
 .speech-bubble {
-    background: #2b2b2b;
-
-    padding: 12px;
-    border-radius: 14px;
 
     flex: 1;
 
-    font-size: 14px;
+    background: #2b2b2b;
+
+    padding: 14px;
+
+    border-radius: 14px;
+
+    font-size: 16px;
 }
 
+/* STATUS */
 .game-status {
-    margin-bottom: 8px;
 
-    font-size: 22px;
+    font-size: 42px;
     font-weight: bold;
+
+    margin-bottom: 15px;
 
     text-align: center;
 }
 
+/* BOARD */
 .board-container {
 
-    width: 72vw;
-    max-width: 430px;
+    width: min(92vw, 78vh);
 
-    aspect-ratio: 1;
+    aspect-ratio: 1 / 1;
 
     display: grid;
     grid-template-columns: repeat(8, 1fr);
 
     border-radius: 14px;
+
     overflow: hidden;
 
-    box-shadow: 0 0 30px rgba(0,0,0,0.7);
+    box-shadow: 0 0 35px rgba(0,0,0,0.7);
 }
 
+/* SQUARES */
 .square {
+
     display: flex;
     justify-content: center;
     align-items: center;
 
-    font-size: 42px;
+    font-size: clamp(28px, 5vw, 58px);
 
     user-select: none;
 
@@ -99,25 +122,29 @@ body {
     background: #f6f669 !important;
 }
 
+/* PIECES */
 .piece {
-    cursor: pointer;
 
-    font-weight: bold;
+    cursor: pointer;
 
     text-shadow: 0 2px 3px rgba(0,0,0,0.4);
 }
 
+/* BUTTONS */
 .controls {
-    margin-top: 12px;
 
     display: flex;
-    gap: 12px;
 
-    margin-bottom: 12px;
+    gap: 15px;
+
+    margin-top: 20px;
+
+    margin-bottom: 20px;
 }
 
 button {
-    padding: 10px 18px;
+
+    padding: 12px 24px;
 
     border: none;
     border-radius: 10px;
@@ -125,7 +152,7 @@ button {
     background: #4CAF50;
     color: white;
 
-    font-size: 15px;
+    font-size: 16px;
 
     cursor: pointer;
 
@@ -134,4 +161,30 @@ button {
 
 button:hover {
     background: #45a049;
+}
+
+/* MOBILE */
+@media (max-width: 700px) {
+
+    .game-status {
+        font-size: 30px;
+    }
+
+    .header {
+        gap: 10px;
+    }
+
+    .coach-avatar {
+        width: 60px;
+        height: 60px;
+    }
+
+    .speech-bubble {
+        font-size: 14px;
+    }
+
+    .board-container {
+
+        width: 96vw;
+    }
 }

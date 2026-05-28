@@ -47,7 +47,7 @@ body {
 }
 
 /* BOARD WRAPPER */
-/* THIS handles radius + clipping */
+/* HANDLES SHADOW + RADIUS */
 
 .board-wrapper {
 
@@ -61,17 +61,22 @@ body {
     min-width: 320px;
     min-height: 320px;
 
-    border-radius: 14px;
+    border-radius: 18px;
 
     overflow: hidden;
 
-    box-shadow: 0 0 35px rgba(0,0,0,0.7);
+    border: 2px solid #3a3a3a;
+
+    background: #222;
+
+    box-shadow:
+        0 0 35px rgba(0,0,0,0.7),
+        inset 0 0 8px rgba(255,255,255,0.04);
 
     flex-shrink: 0;
 }
 
 /* ACTUAL BOARD GRID */
-/* PURE GRID — NO CLIPPING */
 
 .board-container {
 
@@ -108,7 +113,7 @@ body {
     filter: brightness(1.08);
 }
 
-/* COLORS */
+/* BOARD COLORS */
 
 .light {
 

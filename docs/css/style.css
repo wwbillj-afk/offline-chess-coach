@@ -46,9 +46,10 @@ body {
     justify-content: center;
 }
 
-/* BOARD */
+/* BOARD WRAPPER */
+/* THIS handles radius + clipping */
 
-.board-container {
+.board-wrapper {
 
     width: min(78vh, 78vw);
 
@@ -60,10 +61,6 @@ body {
     min-width: 320px;
     min-height: 320px;
 
-    display: grid;
-
-    grid-template-columns: repeat(8, 1fr);
-
     border-radius: 14px;
 
     overflow: hidden;
@@ -71,6 +68,20 @@ body {
     box-shadow: 0 0 35px rgba(0,0,0,0.7);
 
     flex-shrink: 0;
+}
+
+/* ACTUAL BOARD GRID */
+/* PURE GRID — NO CLIPPING */
+
+.board-container {
+
+    width: 100%;
+    height: 100%;
+
+    display: grid;
+
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
 }
 
 /* SQUARES */
@@ -86,8 +97,6 @@ body {
 
     justify-content: center;
     align-items: center;
-
-    overflow: hidden;
 
     user-select: none;
 
@@ -270,7 +279,7 @@ button:hover {
         width: 100%;
     }
 
-    .board-container {
+    .board-wrapper {
 
         width: 96vw;
         height: 96vw;
